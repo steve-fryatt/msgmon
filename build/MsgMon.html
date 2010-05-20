@@ -1,0 +1,166 @@
+
+<div class="chapter">
+<h2><a name="License">License</a></h2>
+
+<p><cite>MsgMon</cite> is <strong>freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2007.</p>
+
+<p><cite>MsgMon</cite> may be copied freely, so long as it remains unaltered with all its files and documentation intact.</p>
+
+<p>If you wish to distribute <cite>MsgMon</cite>, please contact me to get my permission.  This is so that I can ensure that you have the latest version available.  <cite>MsgMon</cite> may not be sold, although Public Domain libraries may charge for the cost of discs.</p>
+
+<p>No guarantee is made as to the suitability or stability of <cite>MsgMon</cite> for any particular purpose.  No liability can be accepted by the author for any loss or damage caused by the use of <cite>MsgMon</cite>.</p>
+</div>
+
+<div class="chapter">
+<h2><a name="Introduction">Introduction</a></h2>
+
+<p><cite>MsgMon</cite> is a module to work with <cite>Reporter</cite>, from Chris Morison and Martin Avison, in order to display details of messages passed between applications using the Wimp's User Message protocol. When run, it installs a set of filters to watch for messages; these are decoded and, if they are in the list of message codes that <cite>MsgMon</cite> is interested in, displayed in the <cite>Reporter</cite> window.</p>
+
+<p>Copies of the latest version of <cite>Reporter</cite> can be found on Martin Avison's website, at <a href="##url http://www.avisoft.force9.co.uk/">http://www.avisoft.force9.co.uk/</a></p>
+</div>
+
+<div class="chapter">
+<h2><a name="Use">Installation and Use</a></h2>
+
+<p><cite>MsgMon</cite> requires RISC OS 3.1 or later, and a copy of <cite>Reporter</cite> from <a href="##url http://www.avisoft.force9.co.uk/">http://www.avisoft.force9.co.uk/</a></p>
+
+<p>The module does not require installation, and it can simply be started from the Filer by double-clicking on it. As long as <cite>Reporter</cite> is also running, details of all Wimp messages passing between the applications running on the system will start to be shown in the <b>Reporter</b> window.</p>
+
+<p>As an example, a simple two message exchange would be shown in <cite>Reporter</cite> by <cite>MsgMon</cite> as follows:</p>
+
+<blockquote><pre>
+Message_DataOpen (&amp;000005) [Message Recorded]
+From 'Filer' to 'StrongED'
+My ref: &amp;0007E35B; Your ref: &amp;00000000
+20  : 20909099 : ...  : 546345113
+24  : FFFFFFFF : .... : -1
+28  : 0000063C : <... : 1596
+32  : 0000021E : .... : 542
+36  : 00000000 : .... : 0
+40  : 00000FFF : .... : 4095
+44  : 53464441 : ADFS : 1397113921
+48  : 79493A3A : ::Iy : 2034842170
+52  : 78696E6F : onix : 2020175471
+56  : 522E242E : .$.R : 1378755630
+60  : 726F7065 : epor : 1919905893
+64  : 73694C74 : tLis : 1936280692
+68  : 00000074 : t... : 116
+72  : 000006BE : .... : 1726
+76  : 000003D4 : .... : 980
+
+Message_DataLoadAck (&amp;000004) [Message]
+From 'StrongED' to 'Filer'
+My ref: &amp;0007E35C; Your ref: &amp;0007E35B
+20  : 20909099 : ...  : 546345113
+24  : FFFFFFFF : .... : -1
+28  : 0000063C : <... : 1596
+32  : 0000021E : .... : 542
+36  : 00000000 : .... : 0
+40  : 00000FFF : .... : 4095
+44  : 53464441 : ADFS : 1397113921
+48  : 79493A3A : ::Iy : 2034842170
+52  : 78696E6F : onix : 2020175471
+56  : 522E242E : .$.R : 1378755630
+60  : 726F7065 : epor : 1919905893
+64  : 73694C74 : tLis : 1936280692
+68  : 00000074 : t... : 116
+72  : 000006BE : .... : 1726
+76  : 000003D4 : .... : 980
+</blockquote></pre>
+
+<p>Each message consists of three header lines in black, followed by a dump of the message contents (where applicable) in blue. The first line of each header is highlighted with a cream background to make individual messages stand out.</p>
+
+<p>The first line of the header consists of the message name (as defined by Acorn and their successors or by the third parties responsible) with the 32-bit hexadecimal message number following it in parentheses. If the message does not appear in the list of numbers that <cite>MsgMon</cite> knows about, a textual name will not be given. At the end of the line is the type of message, in square brackets: this will either be &quot;Message&quot;, &quot;Message Recorded&quot; or &quot;Message Acknowledge&quot;, which correspond to the Wimp_Poll reason codes 17, 18 and 19 respectively.</p>
+
+<p>The second header line shows the applications sending and receiving the message, converted from task handles into task names. Broadcast messages will be reported multiple times: once for each application that they are sent to before being claimed. In some cases, when the system itself sends the message, the 'From' field will appear as an empty string.</p>
+
+<p>The third header line gives the My Ref and Your Ref fields from the message, again as hexadecimal 32-bit numbers.</p>
+
+<p>If the message block was longer than the basic 20 bytes, subsequent lines of the report show the block contents as a series of 32-bit integers.  Each appears on its own line, containing from left to right the offset into the message block, the value of the word in hexadecimal, the value of the word as four ASCII bytes shown LSB to MSB, and the value of the word in signed decimal. In the case of the ASCII bytes, characters outside of the range 32 to 126 (space to '~') are shown as full-stops.</p>
+
+<p>To stop <cite>MsgMon</cite> sending messages to <cite>Reporter</cite>, the module should be killed using <code>*RMKill MsgMon</code> at the command line: this could be placed in an Obey file to save typing it regularly.</p>
+
+<h3>Narrowing down the messages</h3>
+
+<p>By default, <cite>MsgMon</cite> will report all the messages that occur on the system; this very quickly becomes unwieldy. Using the <code>*MsgMonAddMsg</code> command it is possible to narrow down the messages that get reported: once at least one message has been added to <cite>MsgMon</cite>'s list, only listed messages will be included.</p>
+
+<p>The easiest way to use the command is to create Obey files containing lists of messages belonging to specific groups. For example, the following saved as an Obey file would cause messages belonging to the Data Transfer Protocol and the Block Transfer Protocol to be shown:</p>
+
+<blockquote><pre>
+MsgMonAddMsg 1
+MsgMonAddMsg 2
+MsgMonAddMsg 3
+MsgMonAddMsg 4
+MsgMonAddMsg 5
+MsgMonAddMsg 6
+MsgMonAddMsg 7
+MsgMonaddMsg &amp;D
+MsgMonAddMsg &amp;F
+MsgMonAddMsg &amp;10
+MsgMonAddMsg &amp;11
+MsgMonAddMsg &amp;12
+MsgMonAddMsg &amp;13
+</blockquote></pre>
+
+<p>Similarly, a file could be created to report on messages in the Colour Picker Protocol:</p>
+
+<blockquote><pre>
+MsgMonAddMsg &amp;47700
+MsgMonAddMsg &amp;47701
+MsgMonAddMsg &amp;47702
+MsgMonAddMsg &amp;47703
+</blockquote></pre>
+
+<p>Calls to <code>*MsgMonAddMsg</code> are additive, so running these two Obey files in sequence would result in messages belonging to all three protocols being displayed. To remove messages from the list, the <code>*MsgMonRemoveMsg</code> command can be used in a similar way; in addition, <code>*MsgMonRemoveMsg -all</code> would clear the entire list and return <cite>MsgMon</cite> to reporting all messages that are sent. This could be used in the Obey files to make each file select just its own messages by including it before the new messages are added:</p>
+
+<blockquote><pre>
+MsgMonRemoveMsg -all
+MsgMonAddMsg &amp;47700
+MsgMonAddMsg &amp;47701
+MsgMonAddMsg &amp;47702
+MsgMonAddMsg &amp;47703
+</blockquote></pre>
+
+<p>More details of the commands offered by <cite>MsgMon</cite> can be found in the section on <a href="#Config">Configuring the Module</a>.</p>
+</div>
+
+<div class="chapter">
+<h2><a name="Config">Configuring the Module</a></h2>
+
+<p><cite>MsgMon</cite> provides a number of *commands which can be used to control and interrogate its operation.</p>
+
+<p>The command <code>*MsgMonAddMsg</code> is used to add a message to the list to be reported (with an empty list, all messages will be returned).</p>
+
+<p>The &lt;message code&gt; parameter is a numeric Wimp message code: for example, 1 would be Message_DataSave.</p>
+
+<p>The command <code>*MsgMonRemoveMsg</code> removes a message or messages from the interception list.</p>
+
+<p>If the &lt;message code&gt; parameter is used, then an individual message will be removed from the list: the code is a numeric Wimp message code in decimal (or hex, if preceded by &quot;&amp;&quot;).</p>
+
+<p>If -all is used, then all the messages in the list will be removed and <cite>MsgMon</cite> will start reporting on all messages again.</p>
+
+<p><code>*MsgMonListMsgs</code> will display a list of messages being reported by <cite>MsgMon</cite>; entries can be added or removed by <code>*MsgMonAddMsg</code> and <code>*MsgMonRemoveMsg</code> respectively.</p>
+
+<p>An empty list indicates that all messages will be reported.</p>
+
+<p>Load a new file of mappings between message numbers and names, used by <cite>MsgMon</cite> to include names in the Reporter window. This will only be necessary if your system is using non-standard messages provided by third-party applications.</p>
+
+<p>The file pointed to by &lt;message file&gt; is a simple RISC OS format text file, consisting of a one line per message. Each line consists of the message number in hex (with a leading &quot;&amp;&quot;) followed by a tab character (ASCII 9) and then the part of the message name following &quot;Message_"&quot;.</p>
+
+<p>As an example, a file defining message &amp;1 as Message_DataSave and message &amp;400C0 as Message_MenuWarning would appear as follows (note that tabs have been replaced by spaces):</p>
+
+<blockquote><pre>
+&amp;1     DataSave
+&amp;400C0 MenuWarning
+</blockquote></pre>
+
+<p>The standard file used by <cite>MsgMon</cite> can be found in ResourceFS at <i>Resources:$.ThirdParty.MsgMon.MsgList</i> when the module is loaded. This can be copied and used as a basis for updates if required; if you add any useful definitions, please consider submitting your amendments for inclusion in a future release.</p>
+</div>
+
+<div class="chapter">
+<h2><a name="History">Version History</a></h2>
+
+<h3>1.00 (20 May 2010)</h3>
+
+<p>First public release.</p>
+</div>
