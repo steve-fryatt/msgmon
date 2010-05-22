@@ -1,6 +1,6 @@
 <document title="MsgMon">
-<define name="version" value="1.00">
-<define name="date" value="20 May 2010" length=20 align="right">
+<define name="version" value="1.01">
+<define name="date" value="22 May 2010" length=20 align="right">
 
 
 
@@ -49,7 +49,7 @@ A plain text version of this manual is available <here=>*Filer_Run <PrintPDF$Hel
 =============================================================================
 MsgMon - Monitor Wimp Messages with Reporter                     Version $$version$$
 
-(C) Stephen Fryatt 2007                                  $$date$$
+(C) Stephen Fryatt 2007-2010                             $$date$$
 =============================================================================
 </literal>
 
@@ -61,7 +61,7 @@ MsgMon - Monitor Wimp Messages with Reporter                     Version $$versi
 
 <chapter title="License" file="License">
 
-<cite>MsgMon</cite> is <strong>freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2007.
+<cite>MsgMon</cite> is <strong>freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2007-2010.
 
 <cite>MsgMon</cite> may be copied freely, so long as it remains unaltered with all its files and documentation intact.
 
@@ -247,6 +247,15 @@ The standard file used by <cite>MsgMon</cite> can be found in ResourceFS at <fil
 <subhead title="1.00 (20 May 2010)">
 
 First public release.
+
+
+<subhead title="1.01 (22 May 2010)">
+
+Update to first public release.
+
+<list>
+<li>String copies terminate on NULL or LF to correctly handle the full range of task names returned by the Task Manager.
+</list>
 
 </chapter>
 

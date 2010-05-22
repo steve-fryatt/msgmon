@@ -1,14 +1,15 @@
 =============================================================================
-MsgMon - Monitor Wimp Messages with Reporter                     Version 1.00
+MsgMon - Monitor Wimp Messages with Reporter                     Version 1.01
 
-(C) Stephen Fryatt 2007                                           20 May 2010
+(C) Stephen Fryatt 2007-2010                                      22 May 2010
 =============================================================================
 
 
 License
 -------
 
-  MsgMon is FREEWARE.  Copyright is held by the author, Stephen Fryatt, 2007.
+  MsgMon is FREEWARE.  Copyright is held by the author, Stephen Fryatt,
+  2007-2010.
 
   MsgMon may be copied freely, so long as it remains unaltered with all its
   files and documentation intact.
@@ -252,6 +253,15 @@ Version History
   ------------------
 
   First public release.
+
+
+  1.01 (22 May 2010)
+  ------------------
+
+  Update to first public release.
+
+  * String copies terminate on NULL or LF to correctly handle the full range
+    of task names returned by the Task Manager.
 
 
 
