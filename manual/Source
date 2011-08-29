@@ -15,7 +15,7 @@ Version $$version$$ ($$date$$) 
 #Below
 #Line
 #Align Centre
-{f/:PrintPDF} is {f*:Freeware}: please read the <License>.
+{f/:PrintPDF} is {f*:Freeware}: please read the <Licence>.
 
 #Indent 2
 #Table Columns 3
@@ -59,7 +59,7 @@ MsgMon - Monitor Wimp Messages with Reporter                     Version $$versi
 
 
 
-<chapter title="License" file="License">
+<chapter title="Licence" file="Licence">
 
 <cite>MsgMon</cite> is <strong>freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2007-2010.
 
