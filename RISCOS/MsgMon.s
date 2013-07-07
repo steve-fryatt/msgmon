@@ -33,6 +33,11 @@ OS_ReadArgs				; Should be XOS...
 OS_PrettyPrint
 OS_NewLine
 OS_Write0
+XResourceFS_RegisterFiles
+XResourceFS_DeregisterFiles
+XFilter_RegisterPostFilter
+OS_Find
+OS_BGet
 
 
 
@@ -117,9 +122,9 @@ EXT 1
 
 ModuleHeader
 	DCD	0			; Offset to task code
-	DCD	init_code		; Offset to initialisation code
-	DCD	final_code		; Offset to finalisation code
-	DCD	service_code		; Offset to service-call handler
+	DCD	InitCode		; Offset to initialisation code
+	DCD	FinalCode		; Offset to finalisation code
+	DCD	ServiceCode		; Offset to service-call handler
 	DCD	TitleString		; Offset to title string
 	DCD	HelpString		; Offset to help string
 	DCD	CommandTable		; Offset to command table
@@ -171,7 +176,7 @@ CommandTable
 
 	DCB	"MsgMonLoadMsgs",0
 	ALIGN
-	DCD	command_loadmsgs
+	DCD	CommandLoadMsgs
 	DCD	&00020001
 	DCD	CommandLoadMsgsSyntax
 	DCD	CommandLoadMsgsHelp
@@ -496,179 +501,179 @@ DisplaySomeMsgs
 ;
 ; Entered with one paramener (the message file name).
 
-.command_loadmsgs
-          STMFD     R13!,{R14}
-          LDR       R12,[R12]
+CommandLoadMsgs
+	STMFD	R13!,{R14}
+	LDR	R12,[R12]
 
 ; Claim 64 bytes of workspace from the stack.
 
-          SUB       R13,R13,#64
+	SUB	R13,R13,#64
 
 ; Decode the parameter string.
 
-          MOV       R1,R0
-          ADR       R0,loadmsg_keyword_string
-          MOV       R2,R13
-          MOV       R3,#64
-          SWI       "OS_ReadArgs"
+	MOV	R1,R0
+	ADR	R0,LoadMsgsKeywordString
+	MOV	R2,R13
+	MOV	R3,#64
+	SWI	OS_ReadArgs
 
-          MOV       R4,R2                                   ; Put the command buffer somewhere safe.
+	MOV	R4,R2					; Put the command buffer somewhere safe.
 
 ; Start to decode the parameters
 
-          ; Look for a value against the message parameter.
+	; Look for a value against the message parameter.
 
-          LDR       R0,[R4,#0]
-          TEQ       R0,#0
-          BEQ       loadmsg_exit
+	LDR	R0,[R4,#0]
+	TEQ	R0,#0
+	BEQ	LoadMsgsExit
 
-          BL        load_msg_file
+	BL	LoadMsgFile
 
-.loadmsg_exit
-          ADD       R13,R13,#64
-          LDMFD     R13!,{PC}
+LoadMsgsExit
+	ADD	R13,R13,#64
+	LDMFD	R13!,{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.loadmsg_keyword_string
-          EQUZ      "file"
-          ALIGN
+LoadMsgsKeywordString
+	DCB	"file",0
+	ALIGN
 
 ; ======================================================================================================================
 
-.init_code
-          STMFD     R13!,{R14}
+InitCode
+	STMFD	R13!,{R14}
 
 ; Claim our workspace and store the pointer.
 
-          MOV       R0,#6
-          MOV       R3,#workspace_size%
-          SWI       "XOS_Module"
-          BVS       init_exit
-          STR       R2,[R12]
-          MOV       R12,R2
+	MOV	R0,#6
+	MOV	R3,#workspace_size%
+	SWI	XOS_Module
+	BVS	InitExit
+	STR	R2,[R12]
+	MOV	R12,R2
 
 ; Initialise the workspace that was just claimed.
 
-          MOV       R0,#0
-          STR       R0,[R12,#module_flags%]
+	MOV	R0,#0
+	STR	R0,[R12,#module_flags%]
 
-          STR       R0,[R12,#msg_list%]
+	STR	R0,[R12,#msg_list%]
 
-          STR       R0,[R12,#msg_file_data%]
-          STR       R0,[R12,#msg_file_index%]
-          STR       R0,[R12,#msg_file_len%]
+	STR	R0,[R12,#msg_file_data%]
+	STR	R0,[R12,#msg_file_index%]
+	STR	R0,[R12,#msg_file_len%]
 
 ; Stick the message translastion file into ResourceFS.
 
-          ADRL      R0,file_data                  ; Point R0 to the file data
-          SWI       "XResourceFS_RegisterFiles"   ; Register the files
+	ADRL	R0,file_data				; Point R0 to the file data
+	SWI	XResourceFS_RegisterFiles		; Register the files
 
 ; Load the message file
 
-          ADRL      R0,default_msg_file
-          BL        load_msg_file
+	ADRL	R0,DefaultMsgFile
+	BL	LoadMsgFile
 
 ; Register a general post filter to see what messages are getting passed in.
 
-          ADRL      R0,TitleString
-          ADR       R1,filter_code
-          MOV       R2,R12
-          MOV       R3,#0
-          LDR       R4,filter_poll_mask
-          SWI       "XFilter_RegisterPostFilter"
+	ADRL	R0,TitleString
+	ADR	R1,filter_code
+	MOV	R2,R12
+	MOV	R3,#0
+	LDR	R4,filter_poll_mask
+	SWI	XFilter_RegisterPostFilter
 
-.init_exit
-          LDMFD     R13!,{PC}
+InitExit
+	LDMFD	R13!,{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.final_code
-          STMFD     R13!,{R14}
-          LDR       R12,[R12]
+FinalCode
+	STMFD	R13!,{R14}
+	LDR	R12,[R12]
 
 ; De-register the post filter.
 
-          ADRL      R0,TitleString
-          ADR       R1,filter_code
-          MOV       R2,R12
-          MOV       R3,#0
-          LDR       R4,filter_poll_mask
-          SWI       "XFilter_DeRegisterPostFilter"
+	ADRL	R0,TitleString
+	ADR	R1,filter_code
+	MOV	R2,R12
+	MOV	R3,#0
+	LDR	R4,filter_poll_mask
+	SWI	XFilter_DeRegisterPostFilter
 
 ; Work through the apps list, freeing the workspace.
 
-.final_freemsgs
-          LDR       R6,[R12,#msg_list%]
-          MOV       R0,#7
+FinalFreeMsgs
+	LDR	R6,[R12,#msg_list%]
+	MOV	R0,#7
 
-.final_freemsgs_loop
-          TEQ       R6,#0
-          BEQ       final_deregister_resfs
+FinalFreeMsgsLoop
+	TEQ	R6,#0
+	BEQ	FinalDeregisterResFS
 
-          MOV       R2,R6
-          LDR       R6,[R6,#msg_block_next%]
-          SWI       "XOS_Module"
+	MOV	R2,R6
+	LDR	R6,[R6,#msg_block_next%]
+	SWI	XOS_Module
 
-          B         final_freemsgs_loop
+	B	FinalFreeMsgsLoop
 
 ; Remove the message translation file from ResourceFS.
 
-.final_deregister_resfs
-          ADRL      R0,file_data                  ; Point R0 to the file data
-          SWI       "XResourceFS_DeregisterFiles" ; De-register the files
+FinalDeregisterResFS
+	ADRL	R0,file_data				; Point R0 to the file data
+	SWI	XResourceFS_DeregisterFiles		; De-register the files
 
 ; Free any message tables in RMA.
 
-          MOV       R0,#7                         ; OS_Module 7
+	MOV	R0,#7					; OS_Module 7
 
-.final_clr_data
-          LDR       R2,[R12,#msg_file_data%]
-          TEQ       R2,#0
-          BEQ       final_clear_index
+FinalClrData
+	LDR	R2,[R12,#msg_file_data%]
+	TEQ	R2,#0
+	BEQ	FinalClrIndex
 
-          SWI       "XOS_Module"
+	SWI	XOS_Module
 
-.final_clear_index
-          LDR       R2,[R12,#msg_file_data%]
-          TEQ       R2,#0
-          BEQ       final_release_workspace
+FinalClrIndex
+	LDR	R2,[R12,#msg_file_data%]
+	TEQ	R2,#0
+	BEQ	FinalReleaseWorkspace
 
-          SWI       "XOS_Module"
+	SWI	XOS_Module
 
 ; Free the RMA workspace
 
-.final_release_workspace
-          TEQ       R12,#0
-          BEQ       final_exit
+FinalReleaseWorkspace
+	TEQ	R12,#0
+	BEQ	FinalExit
 
-          MOV       R0,#7
-          MOV       R2,R12
+	MOV	R0,#7
+	MOV	R2,R12
 
-          SWI       "XOS_Module"
+	SWI	XOS_Module
 
-.final_exit
-          LDMFD     R13!,{PC}
+FinalExit
+	LDMFD	R13!,{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.service_code
-          TEQ       R1,#&60
-          MOVNE     PC,R14
+.ServiceCode
+	TEQ	R1,#&60
+	MOVNE	PC,R14
 
 ; Register the message translation file into ResourceFS.
 
-          STMFD     R13!,{R0-R3,R14}
-          ADRL      R0,file_data
-          MOV       R14,PC
-          MOV       PC,R2
-          LDMFD     R13!,{R0-R3,PC}
+	STMFD	R13!,{R0-R3,R14}
+	ADRL	R0,file_data
+	MOV	R14,PC
+	MOV	PC,R2
+	LDMFD	R13!,{R0-R3,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.default_msg_file
-          EQUZ      "Resources:$.ThirdParty.MsgMon.MsgList"
-          ALIGN
+.DefaultMsgFile
+	DCB	"Resources:$.ThirdParty.MsgMon.MsgList",0
+	ALIGN
 
 ; ======================================================================================================================
 
@@ -706,19 +711,19 @@ DisplaySomeMsgs
 .filter_output_data
           ADRL      R0,filter_text_message
           ADRW      R1,block%
-          BL        copy_string
+          BL        CopyString
 
           LDR       R0,[R5,#16]
           BL        convert_msg_number
 
           ADRL      R0,filter_text_reasonstart
-          BL        copy_string
+          BL        CopyString
 
           MOV       R0,R3
           BL        convert_reason_code
 
           ADRL      R0,filter_text_reasonend
-          BL        copy_string
+          BL        CopyString
 
           ADRW      R0,block%
           SWIVC     "XReport_Text0"
@@ -727,21 +732,21 @@ DisplaySomeMsgs
 
           ADRL      R0,filter_text_from
           ADRW      R1,block%
-          BL        copy_string
+          BL        CopyString
 
           LDR       R0,[R5,#4]
           SWI       "XTaskManager_TaskNameFromHandle"
-          BLVC      copy_string
+          BLVC      CopyString
 
           ADRL      R0,filter_text_to
-          BL        copy_string
+          BL        CopyString
 
           MOV       R0,R4
           SWI       "XTaskManager_TaskNameFromHandle"
-          BLVC      copy_string
+          BLVC      CopyString
 
           ADRL      R0,filter_text_taskend
-          BL        copy_string
+          BL        CopyString
 
           ADRW      R0,block%
           SWIVC     "XReport_Text0"
@@ -750,14 +755,14 @@ DisplaySomeMsgs
 
           ADRL      R0,filter_text_myref
           ADRW      R1,block%
-          BL        copy_string
+          BL        CopyString
 
           LDR       R0,[R5,#8]
           MOV       R2,#16
           SWI       "XOS_ConvertHex8"
 
           ADRL      R0,filter_text_yourref
-          BL        copy_string
+          BL        CopyString
 
           LDR       R0,[R5,#12]
           MOV       R2,#16
@@ -777,7 +782,7 @@ DisplaySomeMsgs
           ADRW      R1,block%                     ; Output the word number
 
           ADRL      R0,filter_text_linestart
-          BL        copy_string
+          BL        CopyString
 
           MOV       R0,R4
           MOV       R2,#4
@@ -797,14 +802,14 @@ DisplaySomeMsgs
 .filter_data_pad_loop_exit
 
           ADRL      R0,filter_text_linesep
-          BL        copy_string
+          BL        CopyString
 
           LDR       R0,[R5,R4]                    ; Output the word as hex
           MOV       R2,#16
           SWI       "XOS_ConvertHex8"
 
           ADRL      R0,filter_text_linesep
-          BL        copy_string
+          BL        CopyString
 
           ADD       R3,R4,R5                       ; Output the word as bytes
 
@@ -837,7 +842,7 @@ DisplaySomeMsgs
           STRB      R0,[R1],#1
 
           ADRL      R0,filter_text_linesep
-          BL        copy_string
+          BL        CopyString
 
           LDR       R0,[R5,R4]                    ; Output the word as decimal
           MOV       R2,#16
@@ -979,7 +984,7 @@ DisplaySomeMsgs
           ADR       R0,reason_unknown
 
 .convert_reason_copy
-          BL        copy_string
+          BL        CopyString
 
 .exit_convert_reason
           LDMFD     R13!,{R0,R2-R5,PC}
@@ -1032,20 +1037,20 @@ DisplaySomeMsgs
           MOV       R5,R0
 
           ADR       R0,convert_text_name_start
-          BL        copy_string
+          BL        CopyString
 
           MOV       R0,R4
-          BL        copy_string
+          BL        CopyString
 
           ADR       R0,convert_text_name_mid
-          BL        copy_string
+          BL        CopyString
 
           MOV       R0,R5
           MOV       R2,#16
           SWI       "XOS_ConvertHex6"
 
           ADR       R0,convert_text_name_end
-          BL        copy_string
+          BL        CopyString
 
           B         exit_convert_msg
 
@@ -1053,7 +1058,7 @@ DisplaySomeMsgs
           MOV       R5,R0
 
           ADR       R0,convert_text_number_start
-          BL        copy_string
+          BL        CopyString
 
           MOV       R0,R5
           MOV       R2,#16
@@ -1080,192 +1085,192 @@ DisplaySomeMsgs
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.load_msg_file
+LoadMsgFile
 
 ; Load a file of message translations into memory.
 ;
 ; R0  => Filename
 ; R12 => Workspace
 
-          STMFD     R13!,{R0-R8,R14}
+	STMFD	R13!,{R0-R8,R14}
 
-          MOV       R1,R0
+	MOV	R1,R0
 
 ; Clear any data currently in memory.
 
-          MOV       R0,#7
+	MOV	R0,#7
 
-.load_clear_data
-          LDR       R2,[R12,#msg_file_data%]
-          TEQ       R2,#0
-          BEQ       load_clear_index
+LoadClearData
+	LDR	R2,[R12,#msg_file_data%]
+	TEQ	R2,#0
+	BEQ	LoadClearIndex
 
-          SWI       "XOS_Module"
+	SWI	XOS_Module
 
-.load_clear_index
-          LDR       R2,[R12,#msg_file_data%]
-          TEQ       R2,#0
-          BEQ       load_clear_ptrs
+LoadClearIndex
+	LDR	R2,[R12,#msg_file_data%]
+	TEQ	R2,#0
+	BEQ	LoadClearPtrs
 
-          SWI       "XOS_Module"
+	SWI	XOS_Module
 
-.load_clear_ptrs
-          MOV       R2,#0
-          STR       R2,[R12,#msg_file_data%]
-          STR       R2,[R12,#msg_file_index%]
-          STR       R2,[R12,#msg_file_len%]
+LoadClearPtrs
+	MOV	R2,#0
+	STR	R2,[R12,#msg_file_data%]
+	STR	R2,[R12,#msg_file_index%]
+	STR	R2,[R12,#msg_file_len%]
 
 ; Get the length of the file, and claim memory from the RMA to hold the lot.
 
-          MOV       R0,#17
-          SWI       "XOS_File"
-          BVS       load_msg_file_exit
+	MOV	R0,#17
+	SWI	XOS_File
+	BVS	LoadMsgFileExit
 
-          MOV       R0,#6
-          MOV       R3,R4,ASL #2                  ; Double the file size to be safe
-          SWI       "XOS_Module"
-          BVS       load_msg_file_exit
+	MOV	R0,#6
+	MOV	R3,R4,ASL #2				; Double the file size to be safe
+	SWI	XOS_Module
+	BVS	LoadMsgFileExit
 
-          STR       R2,[R12,#msg_file_data%]
-          MOV       R7,R2                         ; Block start ptr
-          ADD       R8,R7,R4                      ; Block end ptr
+	STR	R2,[R12,#msg_file_data%]
+	MOV	R7,R2					; Block start ptr
+	ADD	R8,R7,R4				; Block end ptr
 
 ; Try and open the file, leaving the file handle in R1.
 
-.load_open_file
-          MOV       R0,#&43
-          SWI       "XOS_Find"
-          BVS       load_msg_file_exit
+LoadOpenFile
+	MOV	R0,#&43
+	SWI	XOS_Find
+	BVS	LoadMsgFileExit
 
-          TEQ       R0,#0
-          BEQ       load_msg_file_exit
+	TEQ	R0,#0
+	BEQ	LoadMsgFileExit
 
-          MOV       R1,R0                         ; File handle
-          MOV       R6,R7                         ; Main load ptr
-          MOV       R5,#0                         ; Message counter
+	MOV	R1,R0					; File handle
+	MOV	R6,R7					; Main load ptr
+	MOV	R5,#0					; Message counter
 
 ; Now read the file in line by line.  We assume the format
 ;
 ; &XXXXX<tab>Message_Name<lf>
 
-.load_outer_read_loop
-          MOV       R3,R6                         ; Copy of load Ptr
+LoadOuterReadLoop
+	MOV	R3,R6					; Copy of load Ptr
 
-          ; Start by reading in the message number, up to the tab.
+	; Start by reading in the message number, up to the tab.
 
-.load_read_num_loop
-          SWI       "OS_BGet"
-          BCS       load_outer_loop_exit
+LoadReadNumLoop
+	SWI	OS_BGet
+	BCS	LoadOuterLoopExit
 
-          TEQ       R0,#9
-          BEQ       load_read_num_loop_exit
+	TEQ	R0,#9
+	BEQ	LoadReadNumLoopExit
 
-          STRB      R0,[R3],#1
-          B         load_read_num_loop
+	STRB	R0,[R3],#1
+	B	LoadReadNumLoop
 
-          ; Terminate the number string, and convert it into an integer.  Store that integer over the start
-          ; of the string.
+	; Terminate the number string, and convert it into an integer.  Store that integer over the start
+	; of the string.
 
-.load_read_num_loop_exit
-          MOV       R0,#0
-          STRB      R0,[R3]
+LoadReadNumLoopExit
+	MOV	R0,#0
+	STRB	R0,[R3]
 
-          MOV       R4,R1
-          MOV       R0,#10
-          MOV       R1,R6
-          SWI       "XOS_ReadUnsigned"
-          STR       R2,[R6],#4
+	MOV	R4,R1
+	MOV	R0,#10
+	MOV	R1,R6
+	SWI	XOS_ReadUnsigned
+	STR	R2,[R6],#4
 
-          MOV       R1,R4
+	MOV	R1,R4
 
-          ; Read in the message name, following on from the integer.
+	; Read in the message name, following on from the integer.
 
-.load_read_str_loop
-          SWI       "OS_BGet"
-          BCS       load_read_str_loop_exit
+LoadReadStrLoop
+	SWI	OS_BGet
+	BCS	LoadReadStrLoopExit
 
-          CMP       R0,#32
-          BLT       load_read_str_loop_exit
+	CMP	R0,#32
+	BLT	LoadReadStrLoopExit
 
-          STRB      R0,[R6],#1
-          B         load_read_str_loop
+	STRB	R0,[R6],#1
+	B	LoadReadStrLoop
 
-          ; Terminate the message string, and repeat until we finish with CS.
+	; Terminate the message string, and repeat until we finish with CS.
 
-.load_read_str_loop_exit
-          MOV       R0,#0
-          STRB      R0,[R6],#1
+LoadReadStrLoopExit
+	MOV	R0,#0
+	STRB	R0,[R6],#1
 
-          ADD       R6,R6,#3
-          BIC       R6,R6,#3
+	ADD	R6,R6,#3
+	BIC	R6,R6,#3
 
-          ADD       R5,R5,#1
+	ADD	R5,R5,#1
 
-          BCC       load_outer_read_loop
+	BCC	LoadOuterReadLoop
 
-.load_outer_loop_exit
-          STR       R5,[R12,#msg_file_len%]
+LoadOuterLoopExit
+	STR	R5,[R12,#msg_file_len%]
 
 ; Close the file.
 
-.load_close_file
-          MOV       R0,#0
-          SWI       "OS_Find"
+LoadCloseFile
+	MOV	R0,#0
+	SWI	OS_Find
 
 ; Shrink the RMA allocation down to that required.
 
-          MOV       R0,#13
-          MOV       R2,R7
-          SUB       R3,R6,R8
-          SWI       "XOS_Module"
-          BVS       load_msg_file_exit
+	MOV	R0,#13
+	MOV	R2,R7
+	SUB	R3,R6,R8
+	SWI	XOS_Module
+	BVS	LoadMsgFileExit
 
-          STR       R2,[R12,#msg_file_data%]
-          MOV       R7,R2
+	STR	R2,[R12,#msg_file_data%]
+	MOV	R7,R2
 
 ; Claim memory for the index.
 
-          MOV       R0,#6
-          MOV       R3,R5,ASL #2
-          SWI       "XOS_Module"
-          BVS       load_msg_file_exit
+	MOV	R0,#6
+	MOV	R3,R5,ASL #2
+	SWI	XOS_Module
+	BVS	LoadMsgFileExit
 
-          STR       R2,[R12,#msg_file_index%]
+	STR	R2,[R12,#msg_file_index%]
 
 ; Populate the index of messages.
 
-          MOV       R0,R7
-          MOV       R1,#0
+	MOV	R0,R7
+	MOV	R1,#0
 
-.load_index_loop
-          CMP       R1,R5
-          BGE       load_msg_file_exit
+LoadIndexLoop
+	CMP	R1,R5
+	BGE	LoadMsgFileExit
 
-          STR       R0,[R2,R1,ASL #2]
+	STR	R0,[R2,R1,ASL #2]
 
-          ADD       R0,R0,#4
-          ADD       R1,R1,#1
+	ADD	R0,R0,#4
+	ADD	R1,R1,#1
 
-.load_index_skip
-          LDRB      R4,[R0],#1
-          TEQ       R4,#0
-          BNE       load_index_skip
+LoadIndexSkip
+	LDRB	R4,[R0],#1
+	TEQ	R4,#0
+	BNE	LoadIndexSkip
 
-          ADD       R0,R0,#3
-          BIC       R0,R0,#3
+	ADD	R0,R0,#3
+	BIC	R0,R0,#3
 
-          B         load_index_loop
+	B	LoadIndexLoop
 
-.load_msg_file_exit
-          LDMFD     R13!,{R0-R8,R14}
-          TEQ       PC,PC
-          MOVNES    PC,R14
-          MSR       CPSR_f,#0
-          MOV       PC,R14
+LoadMsgFileExit
+	LDMFD	R13!,{R0-R8,R14}
+	TEQ	PC,PC
+	MOVNES	PC,R14
+	MSR	CPSR_f,#0
+	MOV	PC,R14
 
 ; ======================================================================================================================
 
-.copy_string
+.CopyString
 
 ; Copy a null- or LF-terminated string.
 ;
@@ -1274,19 +1279,19 @@ DisplaySomeMsgs
 ;
 ; R1 <= Copied terminator
 
-          STMFD     R13!,{R0,R2,R14}
+	STMFD	R13!,{R0,R2,R14}
 
-.copystring_loop
-          LDRB      R2,[R0],#1
-          STRB      R2,[R1],#1
+.CopyStringLoop
+	LDRB	R2,[R0],#1
+	STRB	R2,[R1],#1
 
-          TEQ       R2,#0
-          TEQNE     R2,#10
-          BNE       copystring_loop
+	TEQ	R2,#0
+	TEQNE	R2,#10
+	BNE	CopyStringLoop
 
-          SUB       R1,R1,#1
+	SUB	R1,R1,#1
 
-          LDMFD     R13!,{R0,R2,PC}
+	LDMFD	R13!,{R0,R2,PC}
 
 ; ======================================================================================================================
 ; Message file data
