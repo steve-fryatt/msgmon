@@ -27,25 +27,28 @@
 ; REM 26/32 bit neutral
 
 
-XOS_Module				EQU &02001E
-XOS_ReadUnsigned			EQU &020021
-OS_ReadArgs				; Should be XOS...
-OS_PrettyPrint
-OS_NewLine
-OS_Write0
-XResourceFS_RegisterFiles
-XResourceFS_DeregisterFiles
-XFilter_RegisterPostFilter
-OS_Find
-OS_BGet
-XOS_ConvertHex6
-XOS_ConvertHex8
-XOS_ConvertCardinal1
-XOS_ConvertInteger4
-XReport_Text0
-XTaskManager_TaskNameFromHandle
+XOS_Module				EQU	&02001E
+XOS_ReadUnsigned			EQU	&020021
+OS_ReadArgs				EQU	&000049; Should be XO
+OS_PrettyPrint				EQU	&000044
+OS_NewLine				EQU	&000003
+OS_Write0				EQU	&000002
+XResourceFS_RegisterFiles		EQU	&061B40
+XResourceFS_DeregisterFiles		EQU	&061B41
+XFilter_RegisterPostFilter		EQU	&062641
+XFilter_DeRegisterPostFilter		EQU	&062643
+OS_Find					EQU	&00000D	; Should be X
+OS_BGet					EQU	&00000A	; Should be X
+XOS_ConvertHex6				EQU	&0200D3
+XOS_ConvertHex8				EQU	&0200D4
+XOS_ConvertCardinal1			EQU	&0200D5
+XOS_ConvertInteger4			EQU	&0200DC
+XReport_Text0				EQU	&074C80
+XTaskManager_TaskNameFromHandle		EQU	&062680
 
 
+TimeLow			SETA	0
+TimeHigh		SETA	0
 
 
 
@@ -85,15 +88,15 @@ MsgBlock_Size		*	@
 
 
 
-REM --------------------------------------------------------------------------------------------------------------------
+;REM --------------------------------------------------------------------------------------------------------------------
+;
+;DIM time% 5, date% 256
+;?time%=3
+;SYS "OS_Word",14,time%
+;SYS "Territory_ConvertDateAndTime",-1,time%,date%,255,"(%dy %m3 %ce%yr)" TO ,date_end%
+;?date_end%=13
 
-DIM time% 5, date% 256
-?time%=3
-SYS "OS_Word",14,time%
-SYS "Territory_ConvertDateAndTime",-1,time%,date%,255,"(%dy %m3 %ce%yr)" TO ,date_end%
-?date_end%=13
-
-REM --------------------------------------------------------------------------------------------------------------------
+;REM --------------------------------------------------------------------------------------------------------------------
 
 
 	AREA	Module,CODE
@@ -1280,14 +1283,14 @@ CopyStringLoop
 ; This is the default message translation file, which is lodged into ResourceFS for us to load.
 
 FileData
-	DCD	FileBlockEnd-FileData
-	DCD	&FFFFFF00 OR time%?4
-	DCD	!time%
-	DCD	FileEnd-FileStart
+	DCD	FileBlockEnd - FileData
+	DCD	&FFFFFF00:OR:$TimeHigh
+	DCD	$TimeLow
+	DCD	FileEnd - FileStart
 	DCD	2_00011001
 	DCB	"ThirdParty.MsgMon.MsgList",0
 	ALIGN
-	DCD	(FileEnd-FileStart)+4
+	DCD	(FileEnd - FileStart) + 4
 
 FileStart
 	DCB	"&0",9,		"Quit",10
