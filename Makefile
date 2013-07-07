@@ -123,8 +123,8 @@ application: $(OUTDIR)/$(RUNIMAGE)
 
 OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
-$(OUTDIR)/$(APP)/$(RUNIMAGE): $(OBJS) $(OBJDIR)
-	$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(APP)/$(RUNIMAGE) $(OBJS)
+$(OUTDIR)/$(RUNIMAGE): $(OBJS) $(OBJDIR)
+	$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(RUNIMAGE) $(OBJS)
 
 # Create a folder to hold the object files.
 
