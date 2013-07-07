@@ -48,52 +48,42 @@ XTaskManager_TaskNameFromHandle
 
 
 
-version$="1.02"
-save_as$="MsgMon"
 
-LIBRARY "<Reporter$Dir>.AsmLib"
+; workspace_target%=&600
+; workspace_size%=0 : REM This is updated.
+; block_size%=256
 
-PRINT "Assemble debug? (Y/N)"
-REPEAT
- g%=GET
-UNTIL (g% AND &DF)=ASC("Y") OR (g% AND &DF)=ASC("N")
-debug%=((g% AND &DF)=ASC("Y"))
+; ---------------------------------------------------------------------------------------------------------------------
+; Set up the Module Workspace
 
-ON ERROR PRINT REPORT$;" at line ";ERL : END
+BlockSize		*	256
 
-REM --------------------------------------------------------------------------------------------------------------------
-REM Set up workspace
+			^	0
+WS_ModuleFlags		#	4	; \TODO -- Not sure if we use this?
+WS_MsgList		#	4
+WS_MsgFileData		#	4
+WS_MsgFileIndex		#	4
+WS_MsgFileLength	#	4
+WS_Block		#	BlockSize
 
-workspace_target%=&600
-workspace_size%=0 : REM This is updated.
-block_size%=256
+WS_Size			*	@
 
-module_flags%=FNworkspace(workspace_size%,4)
-msg_list%=FNworkspace(workspace_size%,4)
-msg_file_data%=FNworkspace(workspzce_size%,4)
-msg_file_index%=FNworkspace(workspace_size%,4)
-msg_file_len%=FNworkspace(workspace_size%,4)
-block%=FNworkspace(workspace_size%,block_size%)
+; PRINT'"Stack size:  ";workspace_target%-workspace_size%;" bytes."
+; stack%=FNworkspace(workspace_size%,workspace_target%-workspace_size%)
 
-PRINT'"Stack size:  ";workspace_target%-workspace_size%;" bytes."
-stack%=FNworkspace(workspace_size%,workspace_target%-workspace_size%)
+; ---------------------------------------------------------------------------------------------------------------------
+; Set up the Message List Block Template
 
-REM --------------------------------------------------------------------------------------------------------------------
-REM Set up the module flags
+			^	0
+MsgBlock_MagicWord	#	4
+MsgBlock_Next		#	4
+MsgBlock_Dim		#	4	; \TODO -- Not sure if we use this?
+MsgBlock_Number		#	4
 
-flag_icon% =   &10 : REM Flag set if the caret is currently in a writable icon.
-flag_wimp% =   &20 : REM Flag set if we are currently in a Wimp context.
-flag_doicon% = &40 : REM Flag set if we are supposed to be fiddling wimp icon keys.
+MsgBlock_Size		*	@
 
-REM --------------------------------------------------------------------------------------------------------------------
-REM Set up application list block
 
-msg_block_size%=0 : REM This is updated.
 
-msg_block_magic_word%=FNworkspace(msg_block_size%,4)
-msg_block_next%=FNworkspace(msg_block_size%,4)
-msg_block_dim%=FNworkspace(msg_block_size%,4)
-msg_block_number%=FNworkspace(msg_block_size%,4)
 
 REM --------------------------------------------------------------------------------------------------------------------
 
@@ -105,20 +95,6 @@ SYS "Territory_ConvertDateAndTime",-1,time%,date%,255,"(%dy %m3 %ce%yr)" TO ,dat
 
 REM --------------------------------------------------------------------------------------------------------------------
 
-code_space%=8000
-DIM code% code_space%
-
-pass_flags%=%11100
-
-IF debug% THEN PROCReportInit(200)
-
-FOR pass%=pass_flags% TO pass_flags% OR %10 STEP %10
-L%=code%+code_space%
-O%=code%
-P%=0
-IF debug% THEN PROCReportStart(pass%)
-[OPT pass%
-EXT 1
 
 	AREA	Module,CODE
 	ENTRY
@@ -292,7 +268,7 @@ CommandAddMsg
 
 AddMsgClaimBlock
 	MOV	R0,#6
-	MOV	R3,#msg_block_size%
+	MOV	R3,#MsgBlock_Size
 	SWI	XOS_Module
 	BVS	AddMsgExit
 
@@ -300,16 +276,16 @@ AddMsgClaimBlock
 
 AddMsgFillBlock
 	LDR	R0,MagicWord				; Magic word to check block identity.
-	STR	R0,[R2,#msg_block_magic_word%]
-	STR	R3,[R2,#msg_block_dim%]			; Block size.
-	STR	R6,[R2,#msg_block_number%]		; Point to the start of the namespace...
+	STR	R0,[R2,#MsgBlock_MagicWord]
+	STR	R3,[R2,#MsgBlock_Dim]			; Block size.
+	STR	R6,[R2,#MsgBlock_Number]		; Point to the start of the namespace...
 
 ; Link the block into the message list.
 
 AddMsgLinkIn
-	LDR	R5,[R12,#msg_list%]
-	STR	R5,[R2,#msg_block_next%]
-	STR	R2,[R12,#msg_list%]
+	LDR	R5,[R12,#WS_MsgList]
+	STR	R5,[R2,#MsgBlock_Next]
+	STR	R2,[R12,#WS_MsgList]
 
 AddMsgExit
 	ADD	R13,R13,#64
@@ -372,7 +348,7 @@ CommandRemoveMsg
 ; Find the message block in the linked list and remove it.
 
 RemMsgStartMsgSearch
-	ADRW	R0,msg_list%
+	ADRW	R0,WS_MsgList
 
 RemMsgFindMsgLoop
 	LDR	R1,[R0]
@@ -380,11 +356,11 @@ RemMsgFindMsgLoop
 	TEQ	R1,R6
 	BEQ	RemMsgFoundMsg
 
-	ADD	R0,R1,#msg_block_next%
+	ADD	R0,R1,#MsgBlock_Next
 	B	RemMsgFindMsgLoop
 
 RemMsgFoundMsg
-	LDR	R1,[R6,#msg_block_next%]
+	LDR	R1,[R6,#MsgBlock_Next]
 	STR	R1,[R0]
 
 	MOV	R0,#7
@@ -396,15 +372,15 @@ RemMsgFoundMsg
 ; Remove all the messages.
 
 RemMsgAll
-	LDR	R6,[R12,#msg_list%]
+	LDR	R6,[R12,#WS_MsgList]
 	TEQ	R6,#0
 	BEQ	RemMsgExit
 
 	MOV	R4,#0
-	STR	R4,[R12,#msg_list%]
+	STR	R4,[R12,#WS_MsgList]
 
 RemMsgAllLoop
-	LDR	R5,[R6,#msg_block_next%]
+	LDR	R5,[R6,#MsgBlock_Next]
 
 	MOV	R0,#7
 	MOV	R2,R6
@@ -435,7 +411,7 @@ CommandListMsgs
 
 ; Traverse the message linked list, printing the message data out as we go.
 
-	LDR	R6,[R12,#msg_list%]
+	LDR	R6,[R12,#WS_MsgList]
 	TEQ	R6,#0
 	BEQ	ListMsgsAllMsgs
 
@@ -455,11 +431,11 @@ ListMsgsOuterLoop
 ; Print the message number
 
 ListMsgsPrintNames
-	LDR	R0,[R6,#msg_block_number%]
-	ADRW	R1,block%
+	LDR	R0,[R6,#MsgBlock_Number]
+	ADRW	R1,WS_Block
 	BL	ConvertMsgNumber
 
-	ADRW	R0,block%
+	ADRW	R0,WS_Block
 	SWI	OS_Write0
 
 ; End off with a new line.
@@ -469,7 +445,7 @@ ListMsgsPrintEOL
 
 ; Get the next message data block and loop.
 
-	LDR	R6,[R6,#msg_block_next%]
+	LDR	R6,[R6,#MsgBlock_Next]
 
 	TEQ	R6,#0
 	BNE	ListMsgsOuterLoop
@@ -553,7 +529,7 @@ InitCode
 ; Claim our workspace and store the pointer.
 
 	MOV	R0,#6
-	MOV	R3,#workspace_size%
+	MOV	R3,#WS_Size
 	SWI	XOS_Module
 	BVS	InitExit
 	STR	R2,[R12]
@@ -562,13 +538,13 @@ InitCode
 ; Initialise the workspace that was just claimed.
 
 	MOV	R0,#0
-	STR	R0,[R12,#module_flags%]
+	STR	R0,[R12,#WS_ModuleFlags]
 
-	STR	R0,[R12,#msg_list%]
+	STR	R0,[R12,#WS_MsgList]
 
-	STR	R0,[R12,#msg_file_data%]
-	STR	R0,[R12,#msg_file_index%]
-	STR	R0,[R12,#msg_file_len%]
+	STR	R0,[R12,#WS_MsgFileData]
+	STR	R0,[R12,#WS_MsgFileIndex]
+	STR	R0,[R12,#WS_MsgFileLength]
 
 ; Stick the message translastion file into ResourceFS.
 
@@ -610,7 +586,7 @@ FinalCode
 ; Work through the apps list, freeing the workspace.
 
 FinalFreeMsgs
-	LDR	R6,[R12,#msg_list%]
+	LDR	R6,[R12,#WS_MsgList]
 	MOV	R0,#7
 
 FinalFreeMsgsLoop
@@ -618,7 +594,7 @@ FinalFreeMsgsLoop
 	BEQ	FinalDeregisterResFS
 
 	MOV	R2,R6
-	LDR	R6,[R6,#msg_block_next%]
+	LDR	R6,[R6,#MsgBlock_Next]
 	SWI	XOS_Module
 
 	B	FinalFreeMsgsLoop
@@ -634,14 +610,14 @@ FinalDeregisterResFS
 	MOV	R0,#7					; OS_Module 7
 
 FinalClrData
-	LDR	R2,[R12,#msg_file_data%]
+	LDR	R2,[R12,#WS_MsgFileData]
 	TEQ	R2,#0
 	BEQ	FinalClrIndex
 
 	SWI	XOS_Module
 
 FinalClrIndex
-	LDR	R2,[R12,#msg_file_data%]
+	LDR	R2,[R12,#WS_MsgFileData]
 	TEQ	R2,#0
 	BEQ	FinalReleaseWorkspace
 
@@ -701,7 +677,7 @@ FilterCode
 
 ; If there isn't a list of allowed messages, jump straight to the output code.
 
-	LDR	R0,[R12,#msg_list%]
+	LDR	R0,[R12,#WS_MsgList]
 	TEQ	R0,#0
 	BEQ	FilterOutputData
 
@@ -716,7 +692,7 @@ FilterCode
 
 FilterOutputData
 	ADRL	R0,FilterTextMessageStart
-	ADRW	R1,block%
+	ADRW	R1,WS_Block
 	BL	CopyString
 
 	LDR	R0,[R5,#16]
@@ -731,13 +707,13 @@ FilterOutputData
 	ADRL	R0,FilterTextReasonEnd
 	BL	CopyString
 
-	ADRW	R0,block%
+	ADRW	R0,WS_Block
 	SWIVC	XReport_Text0
 
 ; Output the two task names.
 
 	ADRL	R0,FilterTextFrom
-	ADRW	R1,block%
+	ADRW	R1,WS_Block
 	BL	CopyString
 
 	LDR	R0,[R5,#4]
@@ -754,13 +730,13 @@ FilterOutputData
 	ADRL	R0,FilterTextTaskEnd
 	BL	CopyString
 
-	ADRW	R0,block%
+	ADRW	R0,WS_Block
 	SWIVC	XReport_Text0
 
 ; Output the references
 
 	ADRL	R0,FilterTextMyRef
-	ADRW	R1,block%
+	ADRW	R1,WS_Block
 	BL	CopyString
 
 	LDR	R0,[R5,#8]
@@ -774,7 +750,7 @@ FilterOutputData
 	MOV	R2,#16
 	SWI	XOS_ConvertHex8
 
-	ADRW	R0,block%
+	ADRW	R0,WS_Block
 	SWIVC	XReport_Text0
 
 ; Output the data contained in the message
@@ -785,7 +761,7 @@ FilterDataLoop
 	CMP	R4,R3
 	BGE	FilterDataLoopExit
 
-	ADRW	R1,block%				; Output the word number
+	ADRW	R1,WS_Block				; Output the word number
 
 	ADRL	R0,FilterTextLineStart
 	BL	CopyString
@@ -856,7 +832,7 @@ FilterDataPadLoopExit
 	MOV	R0,#0
 	STRB	R0,[R1]
 
-	ADRW	R0,block%
+	ADRW	R0,WS_Block
 	SWI	XReport_Text0
 
 	ADD	R4,R4,#4
@@ -865,7 +841,7 @@ FilterDataPadLoopExit
 ; Put a space between blocks.
 
 FilterDataLoopExit
-	ADRW	R0,block%
+	ADRW	R0,WS_Block
 	MOV	R1,#0
 	STR	R1,[R0]
 	SWI	XReport_Text0
@@ -928,7 +904,7 @@ FindMsgBlock
 
 ; Set R4 up ready for the compare subroutine.  R6 points to the first block of message data.
 
-	LDR	R6,[R12,#msg_list%]
+	LDR	R6,[R12,#WS_MsgList]
 
 ; If this is the end of the list (null pointer in R6), exit now.
 
@@ -939,13 +915,13 @@ FindMsgLoop
 ; Point R3 to the application name and compare with the name supplied.  If equal, exit now with R6 pointing to
 ; the data block.
 
-	LDR	R1,[R6,#msg_block_number%]
+	LDR	R1,[R6,#MsgBlock_Number]
 	TEQ	R0,R1
 	BEQ	FindMsgExit
 
 ; Load the next block pointer into R6 and loop.
 
-	LDR	R6,[R6,#msg_block_next%]
+	LDR	R6,[R6,#MsgBlock_Next]
 	B	FindMsgLoop
 
 FindMsgExit
@@ -1023,8 +999,8 @@ ConvertMsgNumber
 
 	STMFD	R13!,{R0,R2-R5,R14}
 
-	LDR	R2,[R12,#msg_file_index%]
-	LDR	R3,[R12,#msg_file_len%]
+	LDR	R2,[R12,#WS_MsgFileIndex]
+	LDR	R3,[R12,#WS_MsgFileLength]
 
 ConvertFindLoop
 	TEQ	R3,#0
@@ -1106,14 +1082,14 @@ LoadMsgFile
 	MOV	R0,#7
 
 LoadClearData
-	LDR	R2,[R12,#msg_file_data%]
+	LDR	R2,[R12,#WS_MsgFileData]
 	TEQ	R2,#0
 	BEQ	LoadClearIndex
 
 	SWI	XOS_Module
 
 LoadClearIndex
-	LDR	R2,[R12,#msg_file_data%]
+	LDR	R2,[R12,#WS_MsgFileData]
 	TEQ	R2,#0
 	BEQ	LoadClearPtrs
 
@@ -1121,9 +1097,9 @@ LoadClearIndex
 
 LoadClearPtrs
 	MOV	R2,#0
-	STR	R2,[R12,#msg_file_data%]
-	STR	R2,[R12,#msg_file_index%]
-	STR	R2,[R12,#msg_file_len%]
+	STR	R2,[R12,#WS_MsgFileData]
+	STR	R2,[R12,#WS_MsgFileIndex]
+	STR	R2,[R12,#WS_MsgFileLength]
 
 ; Get the length of the file, and claim memory from the RMA to hold the lot.
 
@@ -1136,7 +1112,7 @@ LoadClearPtrs
 	SWI	XOS_Module
 	BVS	LoadMsgFileExit
 
-	STR	R2,[R12,#msg_file_data%]
+	STR	R2,[R12,#WS_MsgFileData]
 	MOV	R7,R2					; Block start ptr
 	ADD	R8,R7,R4				; Block end ptr
 
@@ -1214,7 +1190,7 @@ LoadReadStrLoopExit
 	BCC	LoadOuterReadLoop
 
 LoadOuterLoopExit
-	STR	R5,[R12,#msg_file_len%]
+	STR	R5,[R12,#WS_MsgFileLength]
 
 ; Close the file.
 
@@ -1230,7 +1206,7 @@ LoadCloseFile
 	SWI	XOS_Module
 	BVS	LoadMsgFileExit
 
-	STR	R2,[R12,#msg_file_data%]
+	STR	R2,[R12,#WS_MsgFileData]
 	MOV	R7,R2
 
 ; Claim memory for the index.
@@ -1240,7 +1216,7 @@ LoadCloseFile
 	SWI	XOS_Module
 	BVS	LoadMsgFileExit
 
-	STR	R2,[R12,#msg_file_index%]
+	STR	R2,[R12,#WS_MsgFileIndex]
 
 ; Populate the index of messages.
 
@@ -1308,7 +1284,7 @@ FileData
 	DCD	&FFFFFF00 OR time%?4
 	DCD	!time%
 	DCD	FileEnd-FileStart
-	DCD	%00011001
+	DCD	2_00011001
 	DCB	"ThirdParty.MsgMon.MsgList",0
 	ALIGN
 	DCD	(FileEnd-FileStart)+4
@@ -1460,24 +1436,5 @@ FileEnd
 	ALIGN
 FileBlockEnd
 	DCD	0
-]
-IF debug% THEN
-[OPT pass%
-          FNReportGen
-]
-ENDIF
-NEXT pass%
 
-SYS "OS_File",10,"<Basic$Dir>."+save_as$,&FFA,,code%,code%+P%
-
-PRINT "Module size: ";P%;" bytes."
-
-END
-
-
-
-DEF FNworkspace(RETURN size%,dim%)
-LOCAL ptr%
-ptr%=size%
-size%+=dim%
-=ptr%
+	END
