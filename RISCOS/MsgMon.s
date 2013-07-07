@@ -572,7 +572,7 @@ InitCode
 
 ; Stick the message translastion file into ResourceFS.
 
-	ADRL	R0,file_data				; Point R0 to the file data
+	ADRL	R0,FileData				; Point R0 to the file data
 	SWI	XResourceFS_RegisterFiles		; Register the files
 
 ; Load the message file
@@ -626,7 +626,7 @@ FinalFreeMsgsLoop
 ; Remove the message translation file from ResourceFS.
 
 FinalDeregisterResFS
-	ADRL	R0,file_data				; Point R0 to the file data
+	ADRL	R0,FileData				; Point R0 to the file data
 	SWI	XResourceFS_DeregisterFiles		; De-register the files
 
 ; Free any message tables in RMA.
@@ -670,7 +670,7 @@ FinalExit
 ; Register the message translation file into ResourceFS.
 
 	STMFD	R13!,{R0-R3,R14}
-	ADRL	R0,file_data
+	ADRL	R0,FileData
 	MOV	R14,PC
 	MOV	PC,R2
 	LDMFD	R13!,{R0-R3,PC}
@@ -1303,163 +1303,163 @@ CopyStringLoop
 ;
 ; This is the default message translation file, which is lodged into ResourceFS for us to load.
 
-.file_data
-          DCD      file_block_end-file_data
-          DCD      &FFFFFF00 OR time%?4
-          DCD      !time%
-          DCD      file_end-file_start
-          DCD      %00011001
-          EQUZ      "ThirdParty.MsgMon.MsgList"
-          ALIGN
-          DCD      (file_end-file_start)+4
+FileData
+	DCD	FileBlockEnd-FileData
+	DCD	&FFFFFF00 OR time%?4
+	DCD	!time%
+	DCD	FileEnd-FileStart
+	DCD	%00011001
+	DCB	"ThirdParty.MsgMon.MsgList",0
+	ALIGN
+	DCD	(FileEnd-FileStart)+4
 
-.file_start
-          DCB      "&0"+CHR$(9)+"Quit"+CHR$(10)
-          DCB      "&1"+CHR$(9)+"DataSave"+CHR$(10)
-          DCB      "&2"+CHR$(9)+"DataSaveAck"+CHR$(10)
-          DCB      "&3"+CHR$(9)+"DataLoad"+CHR$(10)
-          DCB      "&4"+CHR$(9)+"DataLoadAck"+CHR$(10)
-          DCB      "&5"+CHR$(9)+"DataOpen"+CHR$(10)
-          DCB      "&6"+CHR$(9)+"RAMFetch"+CHR$(10)
-          DCB      "&7"+CHR$(9)+"RAMTransmit"+CHR$(10)
-          DCB      "&D"+CHR$(9)+"DataSaved"+CHR$(10)
-          DCB      "&8"+CHR$(9)+"PreQuit"+CHR$(10)
-          DCB      "&9"+CHR$(9)+"PaletteChange"+CHR$(10)
-          DCB      "&A"+CHR$(9)+"SaveDesktop"+CHR$(10)
-          DCB      "&B"+CHR$(9)+"DeviceClaim"+CHR$(10)
-          DCB      "&C"+CHR$(9)+"DeviceInUse"+CHR$(10)
-          DCB      "&E"+CHR$(9)+"Shutdown"+CHR$(10)
-          DCB      "&F"+CHR$(9)+"ClaimEntity"+CHR$(10)
-          DCB      "&10"+CHR$(9)+"DataRequest"+CHR$(10)
-          DCB      "&11"+CHR$(9)+"Dragging"+CHR$(10)
-          DCB      "&12"+CHR$(9)+"DragClaim"+CHR$(10)
-          DCB      "&13"+CHR$(9)+"ReleaseEntity"+CHR$(10)
-          DCB      "&15"+CHR$(9)+"AppControl"+CHR$(10)
-          DCB      "&400"+CHR$(9)+"FilerOpenDir"+CHR$(10)
-          DCB      "&401"+CHR$(9)+"FilerCloseDir"+CHR$(10)
-          DCB      "&402"+CHR$(9)+"FilerOpenDirAt"+CHR$(10)
-          DCB      "&403"+CHR$(9)+"FilerSelectionDirectory"+CHR$(10)
-          DCB      "&404"+CHR$(9)+"FilerAddSelection"+CHR$(10)
-          DCB      "&405"+CHR$(9)+"FilerAction"+CHR$(10)
-          DCB      "&406"+CHR$(9)+"FilerControlAction"+CHR$(10)
-          DCB      "&407"+CHR$(9)+"FilerSelection"+CHR$(10)
-          DCB      "&500"+CHR$(9)+"AlarmSet"+CHR$(10)
-          DCB      "&501"+CHR$(9)+"AlarmGoneOff"+CHR$(10)
-          DCB      "&502"+CHR$(9)+"HelpRequest"+CHR$(10)
-          DCB      "&503"+CHR$(9)+"HelpReply"+CHR$(10)
-          DCB      "&504"+CHR$(9)+"HelpEnable"+CHR$(10)
-          DCB      "&40040"+CHR$(9)+"Notify"+CHR$(10)
-          DCB      "&400C0"+CHR$(9)+"MenuWarning"+CHR$(10)
-          DCB      "&400C1"+CHR$(9)+"ModeChange"+CHR$(10)
-          DCB      "&400C2"+CHR$(9)+"TaskInitialise"+CHR$(10)
-          DCB      "&400C3"+CHR$(9)+"TaskCloseDown"+CHR$(10)
-          DCB      "&400C4"+CHR$(9)+"SlotSize"+CHR$(10)
-          DCB      "&400C5"+CHR$(9)+"SetSlot"+CHR$(10)
-          DCB      "&400C6"+CHR$(9)+"TaskNameRq"+CHR$(10)
-          DCB      "&400C7"+CHR$(9)+"TaskNameIs"+CHR$(10)
-          DCB      "&400C8"+CHR$(9)+"TaskStarted"+CHR$(10)
-          DCB      "&400C9"+CHR$(9)+"MenusDeleted"+CHR$(10)
-          DCB      "&400CA"+CHR$(9)+"Iconize"+CHR$(10)
-          DCB      "&400CB"+CHR$(9)+"WindowClosed"+CHR$(10)
-          DCB      "&400CC"+CHR$(9)+"WindowInfo"+CHR$(10)
-          DCB      "&400CD"+CHR$(9)+"Swap"+CHR$(10)
-          DCB      "&400CE"+CHR$(9)+"ToolsChanged"+CHR$(10)
-          DCB      "&400CF"+CHR$(9)+"FontChanged"+CHR$(10)
-          DCB      "&400D0"+CHR$(9)+"IconizeAt"+CHR$(10)
-          DCB      "&47700"+CHR$(9)+"ColourChoice"+CHR$(10)
-          DCB      "&47701"+CHR$(9)+"ColourChanged"+CHR$(10)
-          DCB      "&47702"+CHR$(9)+"CloseRequest"+CHR$(10)
-          DCB      "&47703"+CHR$(9)+"OpenParent"+CHR$(10)
-          DCB      "&4D540"+CHR$(9)+"PlugIn_Open"+CHR$(10)
-          DCB      "&4D541"+CHR$(9)+"PlugIn_Opening"+CHR$(10)
-          DCB      "&4D542"+CHR$(9)+"PlugIn_Close"+CHR$(10)
-          DCB      "&4D543"+CHR$(9)+"PlugIn_Closed"+CHR$(10)
-          DCB      "&4D544"+CHR$(9)+"PlugIn_Reshape"+CHR$(10)
-          DCB      "&4D545"+CHR$(9)+"PlugIn_Reshape_Request"+CHR$(10)
-          DCB      "&4D546"+CHR$(9)+"PlugIn_Focus"+CHR$(10)
-          DCB      "&4D547"+CHR$(9)+"PlugIn_Unlock"+CHR$(10)
-          DCB      "&4D548"+CHR$(9)+"PlugIn_StreamNew"+CHR$(10)
-          DCB      "&4D549"+CHR$(9)+"PlugIn_StreamDestroy"+CHR$(10)
-          DCB      "&4D54A"+CHR$(9)+"PlugIn_StreamWrite"+CHR$(10)
-          DCB      "&4D54B"+CHR$(9)+"PlugIn_StreamWritten"+CHR$(10)
-          DCB      "&4D54C"+CHR$(9)+"PlugIn_StreamAsFile"+CHR$(10)
-          DCB      "&4D54D"+CHR$(9)+"PlugIn_URLAccess"+CHR$(10)
-          DCB      "&4D54E"+CHR$(9)+"PlugIn_Notify"+CHR$(10)
-          DCB      "&4D54F"+CHR$(9)+"PlugIn_Status"+CHR$(10)
-          DCB      "&4D550"+CHR$(9)+"PlugIn_Busy"+CHR$(10)
-          DCB      "&4D551"+CHR$(9)+"PlugIn_Action"+CHR$(10)
-          DCB      "&4D552"+CHR$(9)+"PlugIn_Abort"+CHR$(10)
-          DCB      "&42580"+CHR$(9)+"ThrowbackStart"+CHR$(10)
-          DCB      "&42581"+CHR$(9)+"ProcessingFile"+CHR$(10)
-          DCB      "&42582"+CHR$(9)+"ErrorsIn"+CHR$(10)
-          DCB      "&42583"+CHR$(9)+"ErrorDetails"+CHR$(10)
-          DCB      "&42584"+CHR$(9)+"ThrowbackEnd"+CHR$(10)
-          DCB      "&42585"+CHR$(9)+"InfoForFile"+CHR$(10)
-          DCB      "&42586"+CHR$(9)+"InfoDetails"+CHR$(10)
-          DCB      "&808C0"+CHR$(9)+"TW_Input"+CHR$(10)
-          DCB      "&808C1"+CHR$(9)+"TW_Output"+CHR$(10)
-          DCB      "&808C2"+CHR$(9)+"TW_Ego"+CHR$(10)
-          DCB      "&808C3"+CHR$(9)+"TW_Morio"+CHR$(10)
-          DCB      "&808C4"+CHR$(9)+"TW_Morite"+CHR$(10)
-          DCB      "&808C5"+CHR$(9)+"TW_NewTask"+CHR$(10)
-          DCB      "&808C6"+CHR$(9)+"TW_Suspend"+CHR$(10)
-          DCB      "&808C7"+CHR$(9)+"TW_Resume"+CHR$(10)
-          DCB      "&80140"+CHR$(9)+"PrintFile"+CHR$(10)
-          DCB      "&80141"+CHR$(9)+"WillPrint"+CHR$(10)
-          DCB      "&80142"+CHR$(9)+"PrintSave"+CHR$(10)
-          DCB      "&80143"+CHR$(9)+"PrintInit"+CHR$(10)
-          DCB      "&80144"+CHR$(9)+"PrintError"+CHR$(10)
-          DCB      "&80145"+CHR$(9)+"PrintTypeOdd"+CHR$(10)
-          DCB      "&80146"+CHR$(9)+"PrintTypeKnown"+CHR$(10)
-          DCB      "&80147"+CHR$(9)+"SetPrinter"+CHR$(10)
-          DCB      "&8014C"+CHR$(9)+"PSPrinterQuery"+CHR$(10)
-          DCB      "&8014D"+CHR$(9)+"PSPrinterAck"+CHR$(10)
-          DCB      "&8014E"+CHR$(9)+"PSPrinterModified"+CHR$(10)
-          DCB      "&8014F"+CHR$(9)+"PSPrinterDefaults"+CHR$(10)
-          DCB      "&80150"+CHR$(9)+"PSPrinterDefaulted"+CHR$(10)
-          DCB      "&80151"+CHR$(9)+"PSPrinterNotPS"+CHR$(10)
-          DCB      "&80152"+CHR$(9)+"ResetPrinter"+CHR$(10)
-          DCB      "&80153"+CHR$(9)+"PSIsFontPrintRunning"+CHR$(10)
-          DCB      "&81400"+CHR$(9)+"DDE_ToolInfo"+CHR$(10)
-          DCB      "&4E380"+CHR$(9)+"URI_MStarted"+CHR$(10)
-          DCB      "&4E381"+CHR$(9)+"URI_MDying"+CHR$(10)
-          DCB      "&4E382"+CHR$(9)+"URI_MProcess"+CHR$(10)
-          DCB      "&4E383"+CHR$(9)+"URI_MReturnResult"+CHR$(10)
-          DCB      "&4E384"+CHR$(9)+"URI_MProcessAck"+CHR$(10)
-          DCB      "&45D80"+CHR$(9)+"EditRq"+CHR$(10)
-          DCB      "&45D81"+CHR$(9)+"EditAck"+CHR$(10)
-          DCB      "&45D82"+CHR$(9)+"EditReturn"+CHR$(10)
-          DCB      "&45D83"+CHR$(9)+"EditAbort"+CHR$(10)
-          DCB      "&45D84"+CHR$(9)+"EditDataSave"+CHR$(10)
-          DCB      "&45D85"+CHR$(9)+"EditCursor"+CHR$(10)
-          DCB      "&80E1E"+CHR$(9)+"OLE_FileChanged"+CHR$(10)
-          DCB      "&80E21"+CHR$(9)+"OLE_OpenSession"+CHR$(10)
-          DCB      "&80E22"+CHR$(9)+"OLE_OpenSessionAck"+CHR$(10)
-          DCB      "&80E23"+CHR$(9)+"OLE_CloseSession"+CHR$(10)
-          DCB      "&83580"+CHR$(9)+"NewsBase_Command"+CHR$(10)
-          DCB      "&83581"+CHR$(9)+"NewsBase_Reply"+CHR$(10)
-          DCB      "&83582"+CHR$(9)+"NewsBase_Update"+CHR$(10)
-          DCB      "&DAB00"+CHR$(9)+"IRC_SendData"+CHR$(10)
-          DCB      "&DAB01"+CHR$(9)+"IRC_SendRawData"+CHR$(10)
-          DCB      "&46005"+CHR$(9)+"ANT_SendAction"+CHR$(10)
-          DCB      "&4A43B"+CHR$(9)+"PopupHelp_SendHelp"+CHR$(10)
-          DCB      "&4A43C"+CHR$(9)+"PopupHelp_RequestHelp"+CHR$(10)
-          DCB      "&825C0"+CHR$(9)+"UtilDeclare"+CHR$(10)
-          DCB      "&825C1"+CHR$(9)+"UtilOpen"+CHR$(10)
-          DCB      "&825C2"+CHR$(9)+"UtilQuitting"+CHR$(10)
-          DCB      "&825C3"+CHR$(9)+"UtilReside"+CHR$(10)
-          DCB      "&825C4"+CHR$(9)+"UtilLoadAck"+CHR$(10)
-          DCB      "&450C0"+CHR$(9)+"Connect"+CHR$(10)
-          DCB      "&4AF80"+CHR$(9)+"OpenURL"+CHR$(10)
-          DCB      "&4AF81"+CHR$(9)+"HotlistAddURL"+CHR$(10)
-          DCB      "&4AF82"+CHR$(9)+"HotlistChanged"+CHR$(10)
-          DCB      "&4AF83"+CHR$(9)+"HotlistDelURL"+CHR$(10)
-          DCB      "&4AF87"+CHR$(9)+"HotlistShow"+CHR$(10)
-          DCB      "&4AF88"+CHR$(9)+"HotlistUser"+CHR$(10)
-.file_end
-          ALIGN
-.file_block_end
-          DCD      0
+FileStart
+	DCB	"&0",9,		"Quit",10
+	DCB	"&1",9,		"DataSave",10
+	DCB	"&2",9,		"DataSaveAck",10
+	DCB	"&3",9,		"DataLoad",10
+	DCB	"&4",9,		"DataLoadAck",10
+	DCB	"&5",9,		"DataOpen",10
+	DCB	"&6",9,		"RAMFetch",10
+	DCB	"&7",9,		"RAMTransmit",10
+	DCB	"&D",9,		"DataSaved",10
+	DCB	"&8",9,		"PreQuit",10
+	DCB	"&9",9,		"PaletteChange",10
+	DCB	"&A",9,		"SaveDesktop",10
+	DCB	"&B",9,		"DeviceClaim",10
+	DCB	"&C",9,		"DeviceInUse",10
+	DCB	"&E",9,		"Shutdown",10
+	DCB	"&F",9,		"ClaimEntity",10
+	DCB	"&10",9,	"DataRequest",10
+	DCB	"&11",9,	"Dragging",10
+	DCB	"&12",9,	"DragClaim",10
+	DCB	"&13",9,	"ReleaseEntity",10
+	DCB	"&15",9,	"AppControl",10
+	DCB	"&400",9,	"FilerOpenDir",10
+	DCB	"&401",9,	"FilerCloseDir",10
+	DCB	"&402",9,	"FilerOpenDirAt",10
+	DCB	"&403",9,	"FilerSelectionDirectory",10
+	DCB	"&404",9,	"FilerAddSelection",10
+	DCB	"&405",9,	"FilerAction",10
+	DCB	"&406",9,	"FilerControlAction",10
+	DCB	"&407",9,	"FilerSelection",10
+	DCB	"&500",9,	"AlarmSet",10
+	DCB	"&501",9,	"AlarmGoneOff",10
+	DCB	"&502",9,	"HelpRequest",10
+	DCB	"&503",9,	"HelpReply",10
+	DCB	"&504",9,	"HelpEnable",10
+	DCB	"&40040",9,	"Notify",10
+	DCB	"&400C0",9,	"MenuWarning",10
+	DCB	"&400C1",9,	"ModeChange",10
+	DCB	"&400C2",9,	"TaskInitialise",10
+	DCB	"&400C3",9,	"TaskCloseDown",10
+	DCB	"&400C4",9,	"SlotSize",10
+	DCB	"&400C5",9,	"SetSlot",10
+	DCB	"&400C6",9,	"TaskNameRq",10
+	DCB	"&400C7",9,	"TaskNameIs",10
+	DCB	"&400C8",9,	"TaskStarted",10
+	DCB	"&400C9",9,	"MenusDeleted",10
+	DCB	"&400CA",9,	"Iconize",10
+	DCB	"&400CB",9,	"WindowClosed",10
+	DCB	"&400CC",9,	"WindowInfo",10
+	DCB	"&400CD",9,	"Swap",10
+	DCB	"&400CE",9,	"ToolsChanged",10
+	DCB	"&400CF",9,	"FontChanged",10
+	DCB	"&400D0",9,	"IconizeAt",10
+	DCB	"&47700",9,	"ColourChoice",10
+	DCB	"&47701",9,	"ColourChanged",10
+	DCB	"&47702",9,	"CloseRequest",10
+	DCB	"&47703",9,	"OpenParent",10
+	DCB	"&4D540",9,	"PlugIn_Open",10
+	DCB	"&4D541",9,	"PlugIn_Opening",10
+	DCB	"&4D542",9,	"PlugIn_Close",10
+	DCB	"&4D543",9,	"PlugIn_Closed",10
+	DCB	"&4D544",9,	"PlugIn_Reshape",10
+	DCB	"&4D545",9,	"PlugIn_Reshape_Request",10
+	DCB	"&4D546",9,	"PlugIn_Focus",10
+	DCB	"&4D547",9,	"PlugIn_Unlock",10
+	DCB	"&4D548",9,	"PlugIn_StreamNew",10
+	DCB	"&4D549",9,	"PlugIn_StreamDestroy",10
+	DCB	"&4D54A",9,	"PlugIn_StreamWrite",10
+	DCB	"&4D54B",9,	"PlugIn_StreamWritten",10
+	DCB	"&4D54C",9,	"PlugIn_StreamAsFile",10
+	DCB	"&4D54D",9,	"PlugIn_URLAccess",10
+	DCB	"&4D54E",9,	"PlugIn_Notify",10
+	DCB	"&4D54F",9,	"PlugIn_Status",10
+	DCB	"&4D550",9,	"PlugIn_Busy",10
+	DCB	"&4D551",9,	"PlugIn_Action",10
+	DCB	"&4D552",9,	"PlugIn_Abort",10
+	DCB	"&42580",9,	"ThrowbackStart",10
+	DCB	"&42581",9,	"ProcessingFile",10
+	DCB	"&42582",9,	"ErrorsIn",10
+	DCB	"&42583",9,	"ErrorDetails",10
+	DCB	"&42584",9,	"ThrowbackEnd",10
+	DCB	"&42585",9,	"InfoForFile",10
+	DCB	"&42586",9,	"InfoDetails",10
+	DCB	"&808C0",9,	"TW_Input",10
+	DCB	"&808C1",9,	"TW_Output",10
+	DCB	"&808C2",9,	"TW_Ego",10
+	DCB	"&808C3",9,	"TW_Morio",10
+	DCB	"&808C4",9,	"TW_Morite",10
+	DCB	"&808C5",9,	"TW_NewTask",10
+	DCB	"&808C6",9,	"TW_Suspend",10
+	DCB	"&808C7",9,	"TW_Resume",10
+	DCB	"&80140",9,	"PrintFile",10
+	DCB	"&80141",9,	"WillPrint",10
+	DCB	"&80142",9,	"PrintSave",10
+	DCB	"&80143",9,	"PrintInit",10
+	DCB	"&80144",9,	"PrintError",10
+	DCB	"&80145",9,	"PrintTypeOdd",10
+	DCB	"&80146",9,	"PrintTypeKnown",10
+	DCB	"&80147",9,	"SetPrinter",10
+	DCB	"&8014C",9,	"PSPrinterQuery",10
+	DCB	"&8014D",9,	"PSPrinterAck",10
+	DCB	"&8014E",9,	"PSPrinterModified",10
+	DCB	"&8014F",9,	"PSPrinterDefaults",10
+	DCB	"&80150",9,	"PSPrinterDefaulted",10
+	DCB	"&80151",9,	"PSPrinterNotPS",10
+	DCB	"&80152",9,	"ResetPrinter",10
+	DCB	"&80153",9,	"PSIsFontPrintRunning",10
+	DCB	"&81400",9,	"DDE_ToolInfo",10
+	DCB	"&4E380",9,	"URI_MStarted",10
+	DCB	"&4E381",9,	"URI_MDying",10
+	DCB	"&4E382",9,	"URI_MProcess",10
+	DCB	"&4E383",9,	"URI_MReturnResult",10
+	DCB	"&4E384",9,	"URI_MProcessAck",10
+	DCB	"&45D80",9,	"EditRq",10
+	DCB	"&45D81",9,	"EditAck",10
+	DCB	"&45D82",9,	"EditReturn",10
+	DCB	"&45D83",9,	"EditAbort",10
+	DCB	"&45D84",9,	"EditDataSave",10
+	DCB	"&45D85",9,	"EditCursor",10
+	DCB	"&80E1E",9,	"OLE_FileChanged",10
+	DCB	"&80E21",9,	"OLE_OpenSession",10
+	DCB	"&80E22",9,	"OLE_OpenSessionAck",10
+	DCB	"&80E23",9,	"OLE_CloseSession",10
+	DCB	"&83580",9,	"NewsBase_Command",10
+	DCB	"&83581",9,	"NewsBase_Reply",10
+	DCB	"&83582",9,	"NewsBase_Update",10
+	DCB	"&DAB00",9,	"IRC_SendData",10
+	DCB	"&DAB01",9,	"IRC_SendRawData",10
+	DCB	"&46005",9,	"ANT_SendAction",10
+	DCB	"&4A43B",9,	"PopupHelp_SendHelp",10
+	DCB	"&4A43C",9,	"PopupHelp_RequestHelp",10
+	DCB	"&825C0",9,	"UtilDeclare",10
+	DCB	"&825C1",9,	"UtilOpen",10
+	DCB	"&825C2",9,	"UtilQuitting",10
+	DCB	"&825C3",9,	"UtilReside",10
+	DCB	"&825C4",9,	"UtilLoadAck",10
+	DCB	"&450C0",9,	"Connect",10
+	DCB	"&4AF80",9,	"OpenURL",10
+	DCB	"&4AF81",9,	"HotlistAddURL",10
+	DCB	"&4AF82",9,	"HotlistChanged",10
+	DCB	"&4AF83",9,	"HotlistDelURL",10
+	DCB	"&4AF87",9,	"HotlistShow",10
+	DCB	"&4AF88",9,	"HotlistUser",10
+FileEnd
+	ALIGN
+FileBlockEnd
+	DCD	0
 ]
 IF debug% THEN
 [OPT pass%
