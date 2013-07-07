@@ -38,6 +38,12 @@ XResourceFS_DeregisterFiles
 XFilter_RegisterPostFilter
 OS_Find
 OS_BGet
+XOS_ConvertHex6
+XOS_ConvertHex8
+XOS_ConvertCardinal1
+XOS_ConvertInteger4
+XReport_Text0
+XTaskManager_TaskNameFromHandle
 
 
 
@@ -276,7 +282,7 @@ CommandAddMsg
 	BVS	AddMsgExit
 
 	MOV	R0,R2
-	BL	find_msg_block
+	BL	FindMsgBlock
 	TEQ	R6,#0
 	BNE	AddMsgExit
 
@@ -359,7 +365,7 @@ CommandRemoveMsg
 ; Find the message block if it exists.
 
 	MOV	R0,R2
-	BL	find_msg_block
+	BL	FindMsgBlock
 	TEQ	R6,#0
 	BEQ	RemMsgExit
 
@@ -451,7 +457,7 @@ ListMsgsOuterLoop
 ListMsgsPrintNames
 	LDR	R0,[R6,#msg_block_number%]
 	ADRW	R1,block%
-	BL	convert_msg_number
+	BL	ConvertMsgNumber
 
 	ADRW	R0,block%
 	SWI	OS_Write0
@@ -577,10 +583,10 @@ InitCode
 ; Register a general post filter to see what messages are getting passed in.
 
 	ADRL	R0,TitleString
-	ADR	R1,filter_code
+	ADR	R1,FilterCode
 	MOV	R2,R12
 	MOV	R3,#0
-	LDR	R4,filter_poll_mask
+	LDR	R4,FilterPollMask
 	SWI	XFilter_RegisterPostFilter
 
 InitExit
@@ -595,10 +601,10 @@ FinalCode
 ; De-register the post filter.
 
 	ADRL	R0,TitleString
-	ADR	R1,filter_code
+	ADR	R1,FilterCode
 	MOV	R2,R12
 	MOV	R3,#0
-	LDR	R4,filter_poll_mask
+	LDR	R4,FilterPollMask
 	SWI	XFilter_DeRegisterPostFilter
 
 ; Work through the apps list, freeing the workspace.
@@ -677,240 +683,239 @@ FinalExit
 
 ; ======================================================================================================================
 
-.filter_code
-          STMFD     R13!, {R0-R6,R12,R14}
+FilterCode
+	STMFD	R13!, {R0-R6,R12,R14}
 
 ; Check that the reason code is 17, 18 or 19.
 
-          TEQ       R0,#17
-          TEQNE     R0,#18
-          TEQNE     R0,#19
-          BNE       filter_exit
+	TEQ	R0,#17
+	TEQNE	R0,#18
+	TEQNE	R0,#19
+	BNE	FilterExit
 
 ; Store some useful registers out of the way.
 
-          MOV       R5,R1                         ; Poll block
-          MOV       R4,R2                         ; Task handle
-          MOV       R3,R0                         ; Reason code
+	MOV	R5,R1					; Poll block
+	MOV	R4,R2					; Task handle
+	MOV	R3,R0					; Reason code
 
 ; If there isn't a list of allowed messages, jump straight to the output code.
 
-          LDR       R0,[R12,#msg_list%]
-          TEQ       R0,#0
-          BEQ       filter_output_data
+	LDR	R0,[R12,#msg_list%]
+	TEQ	R0,#0
+	BEQ	FilterOutputData
 
 ; If there is a list of messages, check that the current one is wanted and exit if not.
 
-          LDR       R0,[R1,#16]
-          BL        find_msg_block
-          TEQ       R6,#0
-          BEQ       filter_exit
+	LDR	R0,[R1,#16]
+	BL	FindMsgBlock
+	TEQ	R6,#0
+	BEQ	FilterExit
 
 ; Output the message number.
 
-.filter_output_data
-          ADRL      R0,filter_text_message
-          ADRW      R1,block%
-          BL        CopyString
+FilterOutputData
+	ADRL	R0,FilterTextMessageStart
+	ADRW	R1,block%
+	BL	CopyString
 
-          LDR       R0,[R5,#16]
-          BL        convert_msg_number
+	LDR	R0,[R5,#16]
+	BL	ConvertMsgNumber
 
-          ADRL      R0,filter_text_reasonstart
-          BL        CopyString
+	ADRL	R0,FilterTextReasonStart
+	BL	CopyString
 
-          MOV       R0,R3
-          BL        convert_reason_code
+	MOV	R0,R3
+	BL	ConvertReasonCode
 
-          ADRL      R0,filter_text_reasonend
-          BL        CopyString
+	ADRL	R0,FilterTextReasonEnd
+	BL	CopyString
 
-          ADRW      R0,block%
-          SWIVC     "XReport_Text0"
+	ADRW	R0,block%
+	SWIVC	XReport_Text0
 
 ; Output the two task names.
 
-          ADRL      R0,filter_text_from
-          ADRW      R1,block%
-          BL        CopyString
+	ADRL	R0,FilterTextFrom
+	ADRW	R1,block%
+	BL	CopyString
 
-          LDR       R0,[R5,#4]
-          SWI       "XTaskManager_TaskNameFromHandle"
-          BLVC      CopyString
+	LDR	R0,[R5,#4]
+	SWI	XTaskManager_TaskNameFromHandle
+	BLVC	CopyString
 
-          ADRL      R0,filter_text_to
-          BL        CopyString
+	ADRL	R0,FilterTextTo
+	BL	CopyString
 
-          MOV       R0,R4
-          SWI       "XTaskManager_TaskNameFromHandle"
-          BLVC      CopyString
+	MOV	R0,R4
+	SWI	XTaskManager_TaskNameFromHandle
+	BLVC	CopyString
 
-          ADRL      R0,filter_text_taskend
-          BL        CopyString
+	ADRL	R0,FilterTextTaskEnd
+	BL	CopyString
 
-          ADRW      R0,block%
-          SWIVC     "XReport_Text0"
+	ADRW	R0,block%
+	SWIVC	XReport_Text0
 
 ; Output the references
 
-          ADRL      R0,filter_text_myref
-          ADRW      R1,block%
-          BL        CopyString
+	ADRL	R0,FilterTextMyRef
+	ADRW	R1,block%
+	BL	CopyString
 
-          LDR       R0,[R5,#8]
-          MOV       R2,#16
-          SWI       "XOS_ConvertHex8"
+	LDR	R0,[R5,#8]
+	MOV	R2,#16
+	SWI	XOS_ConvertHex8
 
-          ADRL      R0,filter_text_yourref
-          BL        CopyString
+	ADRL	R0,FilterTextYourRef
+	BL	CopyString
 
-          LDR       R0,[R5,#12]
-          MOV       R2,#16
-          SWI       "XOS_ConvertHex8"
+	LDR	R0,[R5,#12]
+	MOV	R2,#16
+	SWI	XOS_ConvertHex8
 
-          ADRW      R0,block%
-          SWIVC     "XReport_Text0"
+	ADRW	R0,block%
+	SWIVC	XReport_Text0
 
 ; Output the data contained in the message
 
-          MOV       R4,#20
-.filter_data_loop
-          LDR       R3,[R5,#0]
-          CMP       R4,R3
-          BGE       filter_data_loop_exit
+	MOV	R4,#20
+FilterDataLoop
+	LDR	R3,[R5,#0]
+	CMP	R4,R3
+	BGE	FilterDataLoopExit
 
-          ADRW      R1,block%                     ; Output the word number
+	ADRW	R1,block%				; Output the word number
 
-          ADRL      R0,filter_text_linestart
-          BL        CopyString
+	ADRL	R0,FilterTextLineStart
+	BL	CopyString
 
-          MOV       R0,R4
-          MOV       R2,#4
-          SWI       "XOS_ConvertCardinal1"
+	MOV	R0,R4
+	MOV	R2,#4
+	SWI	XOS_ConvertCardinal1
 
-          MOV       R0,#ASC(" ")
-          SUB       R2,R2,#1
+	MOV	R0,#ASC(" ")
+	SUB	R2,R2,#1
 
-.filter_data_pad_loop
-          TEQ       R2,#0
-          BEQ       filter_data_pad_loop_exit
+FilterDataPadLoop
+	TEQ	R2,#0
+	BEQ	FilterDataPadLoopExit
 
-          STRB      R0,[R1],#1
-          SUB       R2,R2,#1
-          B         filter_data_pad_loop
+	STRB	R0,[R1],#1
+	SUB	R2,R2,#1
+	B	FilterDataPadLoop
 
-.filter_data_pad_loop_exit
+FilterDataPadLoopExit
+	ADRL	R0,FilterTextLineSep
+	BL	CopyString
 
-          ADRL      R0,filter_text_linesep
-          BL        CopyString
+	LDR	R0,[R5,R4]				; Output the word as hex
+	MOV	R2,#16
+	SWI	XOS_ConvertHex8
 
-          LDR       R0,[R5,R4]                    ; Output the word as hex
-          MOV       R2,#16
-          SWI       "XOS_ConvertHex8"
+	ADRL	R0,FilterTextLineSep
+	BL	CopyString
 
-          ADRL      R0,filter_text_linesep
-          BL        CopyString
+	ADD	R3,R4,R5				; Output the word as bytes
 
-          ADD       R3,R4,R5                       ; Output the word as bytes
+	LDRB	R0,[R3,#0]
+	CMP	R0,#32
+	MOVLT	R0,#ASC(".")
+	CMP	R0,#126
+	MOVGT	R0,#ASC(".")
+	STRB	R0,[R1],#1
 
-          LDRB      R0,[R3,#0]
-          CMP       R0,#32
-          MOVLT     R0,#ASC(".")
-          CMP       R0,#126
-          MOVGT     R0,#ASC(".")
-          STRB      R0,[R1],#1
+	LDRB	R0,[R3,#1]
+	CMP	R0,#32
+	MOVLT	R0,#ASC(".")
+	CMP	R0,#126
+	MOVGT	R0,#ASC(".")
+	STRB	R0,[R1],#1
 
-          LDRB      R0,[R3,#1]
-          CMP       R0,#32
-          MOVLT     R0,#ASC(".")
-          CMP       R0,#126
-          MOVGT     R0,#ASC(".")
-          STRB      R0,[R1],#1
+	LDRB	R0,[R3,#2]
+	CMP	R0,#32
+	MOVLT	R0,#ASC(".")
+	CMP	R0,#126
+	MOVGT	R0,#ASC(".")
+	STRB	R0,[R1],#1
 
-          LDRB      R0,[R3,#2]
-          CMP       R0,#32
-          MOVLT     R0,#ASC(".")
-          CMP       R0,#126
-          MOVGT     R0,#ASC(".")
-          STRB      R0,[R1],#1
+	LDRB	R0,[R3,#3]
+	CMP	R0,#32
+	MOVLT	R0,#ASC(".")
+	CMP	R0,#126
+	MOVGT	R0,#ASC(".")
+	STRB	R0,[R1],#1
 
-          LDRB      R0,[R3,#3]
-          CMP       R0,#32
-          MOVLT     R0,#ASC(".")
-          CMP       R0,#126
-          MOVGT     R0,#ASC(".")
-          STRB      R0,[R1],#1
+	ADRL	R0,FilterTextLineSep
+	BL	CopyString
 
-          ADRL      R0,filter_text_linesep
-          BL        CopyString
+	LDR	R0,[R5,R4]				; Output the word as decimal
+	MOV	R2,#16
+	SWI	XOS_ConvertInteger4
 
-          LDR       R0,[R5,R4]                    ; Output the word as decimal
-          MOV       R2,#16
-          SWI       "XOS_ConvertInteger4"
+	MOV	R0,#0
+	STRB	R0,[R1]
 
-          MOV       R0,#0
-          STRB      R0,[R1]
+	ADRW	R0,block%
+	SWI	XReport_Text0
 
-          ADRW      R0,block%
-          SWI       "XReport_Text0"
-
-          ADD       R4,R4,#4
-          B         filter_data_loop
+	ADD	R4,R4,#4
+	B	FilterDataLoop
 
 ; Put a space between blocks.
 
-.filter_data_loop_exit
-          ADRW      R0,block%
-          MOV       R1,#0
-          STR       R1,[R0]
-          SWI       "XReport_Text0"
+FilterDataLoopExit
+	ADRW	R0,block%
+	MOV	R1,#0
+	STR	R1,[R0]
+	SWI	XReport_Text0
 
-.filter_exit
-          LDMFD     R13!,{R0-R6,R12,R14}
-          TEQ       PC,PC
-          MOVNES    PC,R14
-          MSR       CPSR_f,#0
-          MOV       PC,R14
-
-; ======================================================================================================================
-
-.filter_text_message
-          EQUZ      "\C"
-
-.filter_text_reasonstart
-          EQUZ      " ["
-
-.filter_text_reasonend
-          EQUZ      "]"
-
-.filter_text_from
-          EQUZ      "From '"
-
-.filter_text_to
-          EQUZ      "' to '"
-
-.filter_text_taskend
-          EQUZ      "'"
-
-.filter_text_myref
-          EQUZ      "My ref: &"
-
-.filter_text_yourref
-          EQUZ      "; Your ref: &"
-
-.filter_text_linestart
-          EQUZ      "\b"
-
-.filter_text_linesep
-          EQUZ      " : "
-
-.filter_poll_mask
-          DCD      &FFFFFFFF EOR (1<<17 OR 1<<18 OR 1<<19)
-          ALIGN
+FilterExit
+	LDMFD	R13!,{R0-R6,R12,R14}
+	TEQ	PC,PC
+	MOVNES	PC,R14
+	MSR	CPSR_f,#0
+	MOV	PC,R14
 
 ; ======================================================================================================================
 
-.find_msg_block
+FilterTextMessageStart
+	DCB	"\C",0
+
+FilterTextReasonStart
+	DCB	" [",0
+
+FilterTextReasonEnd
+	DCB	"]",0
+
+FilterTextFrom
+	DCB	"From '",0
+
+FilterTextTo
+	DCB	"' to '",0
+
+FilterTextTaskEnd
+	DCB	"'",0
+
+FilterTextMyRef
+	DCB	"My ref: &",0
+
+FilterTextYourRef
+	DCB	"; Your ref: &",0
+
+FilterTextLineStart
+	DCB	"\b",0
+
+FilterTextLineSep
+	DCB	" : ",0
+
+FilterPollMask
+	DCD	&FFFFFFFF EOR (1<<17 OR 1<<18 OR 1<<19)
+	ALIGN
+
+; ======================================================================================================================
+
+FindMsgBlock
 
 ; Find the block containing details of the given message.
 ;
@@ -919,36 +924,36 @@ FinalExit
 ;
 ; R6  <= block (zero if not found)
 
-          STMFD     R13!,{R0-R5,R14}
+	STMFD	R13!,{R0-R5,R14}
 
 ; Set R4 up ready for the compare subroutine.  R6 points to the first block of message data.
 
-          LDR       R6,[R12,#msg_list%]
+	LDR	R6,[R12,#msg_list%]
 
 ; If this is the end of the list (null pointer in R6), exit now.
 
-.find_msg_loop
-          TEQ       R6,#0
-          BEQ       find_msg_exit
+FindMsgLoop
+	TEQ	R6,#0
+	BEQ	FindMsgExit
 
 ; Point R3 to the application name and compare with the name supplied.  If equal, exit now with R6 pointing to
 ; the data block.
 
-          LDR       R1,[R6,#msg_block_number%]
-          TEQ       R0,R1
-          BEQ       find_msg_exit
+	LDR	R1,[R6,#msg_block_number%]
+	TEQ	R0,R1
+	BEQ	FindMsgExit
 
 ; Load the next block pointer into R6 and loop.
 
-          LDR       R6,[R6,#msg_block_next%]
-          B         find_msg_loop
+	LDR	R6,[R6,#msg_block_next%]
+	B	FindMsgLoop
 
-.find_msg_exit
-          LDMFD     R13!,{R0-R5,PC}
+FindMsgExit
+	LDMFD	R13!,{R0-R5,PC}
 
 ; ======================================================================================================================
 
-.convert_reason_code
+ConvertReasonCode
 
 ; Convert a reason code into a textual version.
 ;
@@ -957,56 +962,56 @@ FinalExit
 ;
 ; R1  <= Terminating null
 
-          STMFD     R13!,{R0,R2-R5,R14}
+	STMFD	R13!,{R0,R2-R5,R14}
 
-.convert_reason_test17
-          TEQ       R0,#17
-          BNE       convert_reason_test18
+ConvertReasonTest17
+	TEQ	R0,#17
+	BNE	ConvertReasonTest18
 
-          ADR       R0,reason_17
-          B         convert_reason_copy
+	ADR	R0,ConvertReason17
+	B	ConvertReasonCopy
 
-.convert_reason_test18
-          TEQ       R0,#18
-          BNE       convert_reason_test19
+ConvertReasonTest18
+	TEQ	R0,#18
+	BNE	ConvertReasonTest19
 
-          ADR       R0,reason_18
-          B         convert_reason_copy
+	ADR	R0,ConvertReason18
+	B	ConvertReasonCopy
 
-.convert_reason_test19
-          TEQ       R0,#19
-          BNE       convert_reason_unknown
+ConvertReasonTest19
+	TEQ	R0,#19
+	BNE	ConvertReasonUnknown
 
-          ADR       R0,reason_19
-          B         convert_reason_copy
+	ADR	R0,ConvertReason19
+	B	ConvertReasonCopy
 
-.convert_reason_unknown
-          ADR       R0,reason_unknown
+ConvertReasonUnknown
+	ADR	R0,ConvertUnknown
 
-.convert_reason_copy
-          BL        CopyString
+ConvertReasonCopy
+	BL	CopyString
 
-.exit_convert_reason
-          LDMFD     R13!,{R0,R2-R5,PC}
+ConvertReasonExit
+	LDMFD	R13!,{R0,R2-R5,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.reason_17
-          EQUZ      "Message"
+ConvertReason17
+	DCS	"Message",0
 
-.reason_18
-          EQUZ      "Message Recorded"
+ConvertReason18
+	DCS	"Message Recorded",0
 
-.reason_19
-          EQUZ      "Message Acknowledge"
+ConvertReason19
+	DCS	"Message Acknowledge",0
 
-.reason_unknown
-          EQUZ      "Unknown"
-          ALIGN
+ConvertUnknown
+	DCS	"Unknown",0
+	ALIGN
 
 ; ======================================================================================================================
 
-.convert_msg_number
+ConvertMsgNumber
 
 ; Convert a message number into a textual version.
 ;
@@ -1016,72 +1021,72 @@ FinalExit
 ;
 ; R1  <= Terminating null
 
-          STMFD     R13!,{R0,R2-R5,R14}
+	STMFD	R13!,{R0,R2-R5,R14}
 
-          LDR       R2,[R12,#msg_file_index%]
-          LDR       R3,[R12,#msg_file_len%]
+	LDR	R2,[R12,#msg_file_index%]
+	LDR	R3,[R12,#msg_file_len%]
 
-.convert_find_loop
-          TEQ       R3,#0
-          BEQ       convert_not_found
+ConvertFindLoop
+	TEQ	R3,#0
+	BEQ	ConvertNotFound
 
-          LDR       R4,[R2],#4
-          LDR       R5,[R4],#4
-          TEQ       R5,R0
-          BEQ       convert_found
+	LDR	R4,[R2],#4
+	LDR	R5,[R4],#4
+	TEQ	R5,R0
+	BEQ	ConvertFound
 
-          SUB       R3,R3,#1
-          B         convert_find_loop
+	SUB	R3,R3,#1
+	B	ConvertFindLoop
 
-.convert_found
-          MOV       R5,R0
+ConvertFound
+	MOV	R5,R0
 
-          ADR       R0,convert_text_name_start
-          BL        CopyString
+	ADR	R0,ConvertTextNameStart
+	BL	CopyString
 
-          MOV       R0,R4
-          BL        CopyString
+	MOV	R0,R4
+	BL	CopyString
 
-          ADR       R0,convert_text_name_mid
-          BL        CopyString
+	ADR	R0,ConvertTextNameMid
+	BL	CopyString
 
-          MOV       R0,R5
-          MOV       R2,#16
-          SWI       "XOS_ConvertHex6"
+	MOV	R0,R5
+	MOV	R2,#16
+	SWI	XOS_ConvertHex6
 
-          ADR       R0,convert_text_name_end
-          BL        CopyString
+	ADR	R0,ConvertTextNameEnd
+	BL	CopyString
 
-          B         exit_convert_msg
+	B	ConvertExit
 
-.convert_not_found
-          MOV       R5,R0
+ConvertNotFound
+	MOV	R5,R0
 
-          ADR       R0,convert_text_number_start
-          BL        CopyString
+	ADR	R0,ConvertTextNumberStart
+	BL	CopyString
 
-          MOV       R0,R5
-          MOV       R2,#16
-          SWI       "XOS_ConvertHex6"
+	MOV	R0,R5
+	MOV	R2,#16
+	SWI	XOS_ConvertHex6
 
-.exit_convert_msg
-          LDMFD     R13!,{R0,R2-R5,PC}
+ConvertExit
+	LDMFD	R13!,{R0,R2-R5,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.convert_text_number_start
-          EQUZ      "Message &"
+ConvertTextNumberStart
+	DCB	"Message &",0
 
-.convert_text_name_start
-          EQUZ      "Message_"
+ConvertTextNameStart
+	DCB	"Message_",0
 
-.convert_text_name_mid
-          EQUZ      " (&"
+ConvertTextNameMid
+	DCB	" (&",0
 
-.convert_text_name_end
-          EQUZ      ")"
+ConvertTextNameEnd
+	DCB	")",0
 
-          ALIGN
+	ALIGN
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1270,7 +1275,7 @@ LoadMsgFileExit
 
 ; ======================================================================================================================
 
-.CopyString
+CopyString
 
 ; Copy a null- or LF-terminated string.
 ;
@@ -1281,7 +1286,7 @@ LoadMsgFileExit
 
 	STMFD	R13!,{R0,R2,R14}
 
-.CopyStringLoop
+CopyStringLoop
 	LDRB	R2,[R0],#1
 	STRB	R2,[R1],#1
 
