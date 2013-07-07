@@ -37,7 +37,8 @@ XResourceFS_RegisterFiles		EQU	&061B40
 XResourceFS_DeregisterFiles		EQU	&061B41
 XFilter_RegisterPostFilter		EQU	&062641
 XFilter_DeRegisterPostFilter		EQU	&062643
-OS_Find					EQU	&00000D	; Should be X
+XOS_Find				EQU	&02000D
+XOS_File				EQU	&020008
 OS_BGet					EQU	&00000A	; Should be X
 XOS_ConvertHex6				EQU	&0200D3
 XOS_ConvertHex8				EQU	&0200D4
@@ -46,6 +47,8 @@ XOS_ConvertInteger4			EQU	&0200DC
 XReport_Text0				EQU	&074C80
 XTaskManager_TaskNameFromHandle		EQU	&062680
 
+	GBLA	TimeLow
+	GBLA	TimeHigh
 
 TimeLow			SETA	0
 TimeHigh		SETA	0
@@ -64,7 +67,7 @@ BlockSize		*	256
 			^	0
 WS_ModuleFlags		#	4	; \TODO -- Not sure if we use this?
 WS_MsgList		#	4
-WS_MsgFileData		#	4
+WS_MsgFileData		*	0	; \TODO -- This should be # 4 but * 0 matches bug in 1.02 source.
 WS_MsgFileIndex		#	4
 WS_MsgFileLength	#	4
 WS_Block		#	BlockSize
@@ -258,7 +261,7 @@ CommandAddMsg
 
 	MOV	R0,#10
 	SWI	XOS_ReadUnsigned
-	BVS	AddMsgExit
+;	BVS	AddMsgExit
 
 	MOV	R0,R2
 	BL	FindMsgBlock
@@ -339,7 +342,7 @@ CommandRemoveMsg
 
 	MOV	R0,#10
 	SWI	XOS_ReadUnsigned
-	BVS	RemMsgExit
+;	BVS	RemMsgExit
 
 ; Find the message block if it exists.
 
@@ -351,7 +354,7 @@ CommandRemoveMsg
 ; Find the message block in the linked list and remove it.
 
 RemMsgStartMsgSearch
-	ADRW	R0,WS_MsgList
+	ADD	R0,R12,#WS_MsgList
 
 RemMsgFindMsgLoop
 	LDR	R1,[R0]
@@ -368,7 +371,7 @@ RemMsgFoundMsg
 
 	MOV	R0,#7
 	MOV	R2,R6
-	SWI	XOS_Module"
+	SWI	XOS_Module
 
 	B	RemMsgExit
 
@@ -435,10 +438,10 @@ ListMsgsOuterLoop
 
 ListMsgsPrintNames
 	LDR	R0,[R6,#MsgBlock_Number]
-	ADRW	R1,WS_Block
+	ADD	R1,R12,#WS_Block
 	BL	ConvertMsgNumber
 
-	ADRW	R0,WS_Block
+	ADD	R0,R12,#WS_Block
 	SWI	OS_Write0
 
 ; End off with a new line.
@@ -473,7 +476,7 @@ MagicWord
 	DCB	"MSGM"					; The RMA data block identifier.
 
 DisplayAllMsgs
-	EQUZ	"All messages are being reported.",0
+	DCB	"All messages are being reported.",0
 
 DisplaySomeMsgs
 	DCB	"The following messages are being reported:",0
@@ -642,7 +645,7 @@ FinalExit
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.ServiceCode
+ServiceCode
 	TEQ	R1,#&60
 	MOVNE	PC,R14
 
@@ -656,8 +659,8 @@ FinalExit
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.DefaultMsgFile
-	DCB	"Resources:$.ThirdParty.MsgMon.MsgList",0
+DefaultMsgFile
+	DCB	"Resources:$$.ThirdParty.MsgMon.MsgList",0
 	ALIGN
 
 ; ======================================================================================================================
@@ -695,7 +698,7 @@ FilterCode
 
 FilterOutputData
 	ADRL	R0,FilterTextMessageStart
-	ADRW	R1,WS_Block
+	ADD	R1,R12,#WS_Block
 	BL	CopyString
 
 	LDR	R0,[R5,#16]
@@ -710,13 +713,13 @@ FilterOutputData
 	ADRL	R0,FilterTextReasonEnd
 	BL	CopyString
 
-	ADRW	R0,WS_Block
+	ADD	R0,R12,#WS_Block
 	SWIVC	XReport_Text0
 
 ; Output the two task names.
 
 	ADRL	R0,FilterTextFrom
-	ADRW	R1,WS_Block
+	ADD	R1,R12,#WS_Block
 	BL	CopyString
 
 	LDR	R0,[R5,#4]
@@ -733,13 +736,13 @@ FilterOutputData
 	ADRL	R0,FilterTextTaskEnd
 	BL	CopyString
 
-	ADRW	R0,WS_Block
+	ADD	R0,R12,#WS_Block
 	SWIVC	XReport_Text0
 
 ; Output the references
 
 	ADRL	R0,FilterTextMyRef
-	ADRW	R1,WS_Block
+	ADD	R1,R12,#WS_Block
 	BL	CopyString
 
 	LDR	R0,[R5,#8]
@@ -753,7 +756,7 @@ FilterOutputData
 	MOV	R2,#16
 	SWI	XOS_ConvertHex8
 
-	ADRW	R0,WS_Block
+	ADD	R0,R12,#WS_Block
 	SWIVC	XReport_Text0
 
 ; Output the data contained in the message
@@ -764,7 +767,7 @@ FilterDataLoop
 	CMP	R4,R3
 	BGE	FilterDataLoopExit
 
-	ADRW	R1,WS_Block				; Output the word number
+	ADD	R1,R12,#WS_Block				; Output the word number
 
 	ADRL	R0,FilterTextLineStart
 	BL	CopyString
@@ -773,7 +776,7 @@ FilterDataLoop
 	MOV	R2,#4
 	SWI	XOS_ConvertCardinal1
 
-	MOV	R0,#ASC(" ")
+	MOV	R0,#32	; ASC(" ")
 	SUB	R2,R2,#1
 
 FilterDataPadLoop
@@ -799,30 +802,30 @@ FilterDataPadLoopExit
 
 	LDRB	R0,[R3,#0]
 	CMP	R0,#32
-	MOVLT	R0,#ASC(".")
+	MOVLT	R0,#46	; ASC(".")
 	CMP	R0,#126
-	MOVGT	R0,#ASC(".")
+	MOVGT	R0,#46	; ASC(".")
 	STRB	R0,[R1],#1
 
 	LDRB	R0,[R3,#1]
 	CMP	R0,#32
-	MOVLT	R0,#ASC(".")
+	MOVLT	R0,#46	; ASC(".")
 	CMP	R0,#126
-	MOVGT	R0,#ASC(".")
+	MOVGT	R0,#46	; ASC(".")
 	STRB	R0,[R1],#1
 
 	LDRB	R0,[R3,#2]
 	CMP	R0,#32
-	MOVLT	R0,#ASC(".")
+	MOVLT	R0,#46	; ASC(".")
 	CMP	R0,#126
-	MOVGT	R0,#ASC(".")
+	MOVGT	R0,#46	; ASC(".")
 	STRB	R0,[R1],#1
 
 	LDRB	R0,[R3,#3]
 	CMP	R0,#32
-	MOVLT	R0,#ASC(".")
+	MOVLT	R0,#46	; ASC(".")
 	CMP	R0,#126
-	MOVGT	R0,#ASC(".")
+	MOVGT	R0,#46	; ASC(".")
 	STRB	R0,[R1],#1
 
 	ADRL	R0,FilterTextLineSep
@@ -835,7 +838,7 @@ FilterDataPadLoopExit
 	MOV	R0,#0
 	STRB	R0,[R1]
 
-	ADRW	R0,WS_Block
+	ADD	R0,R12,#WS_Block
 	SWI	XReport_Text0
 
 	ADD	R4,R4,#4
@@ -844,7 +847,7 @@ FilterDataPadLoopExit
 ; Put a space between blocks.
 
 FilterDataLoopExit
-	ADRW	R0,WS_Block
+	ADD	R0,R12,#WS_Block
 	MOV	R1,#0
 	STR	R1,[R0]
 	SWI	XReport_Text0
@@ -859,7 +862,7 @@ FilterExit
 ; ======================================================================================================================
 
 FilterTextMessageStart
-	DCB	"\C",0
+	DCB	"\\C",0
 
 FilterTextReasonStart
 	DCB	" [",0
@@ -887,9 +890,10 @@ FilterTextLineStart
 
 FilterTextLineSep
 	DCB	" : ",0
+	ALIGN
 
 FilterPollMask
-	DCD	&FFFFFFFF EOR (1<<17 OR 1<<18 OR 1<<19)
+	DCD	&FFFFFFFF:EOR:((1:SHL:17):OR:(1:SHL:18):OR:(1:SHL:19))
 	ALIGN
 
 ; ======================================================================================================================
@@ -976,16 +980,16 @@ ConvertReasonExit
 ; ----------------------------------------------------------------------------------------------------------------------
 
 ConvertReason17
-	DCS	"Message",0
+	DCB	"Message",0
 
 ConvertReason18
-	DCS	"Message Recorded",0
+	DCB	"Message Recorded",0
 
 ConvertReason19
-	DCS	"Message Acknowledge",0
+	DCB	"Message Acknowledge",0
 
 ConvertUnknown
-	DCS	"Unknown",0
+	DCB	"Unknown",0
 	ALIGN
 
 ; ======================================================================================================================
@@ -1199,7 +1203,7 @@ LoadOuterLoopExit
 
 LoadCloseFile
 	MOV	R0,#0
-	SWI	OS_Find
+	SWI	XOS_Find
 
 ; Shrink the RMA allocation down to that required.
 
