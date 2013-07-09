@@ -67,7 +67,7 @@ BlockSize		*	256
 			^	0
 WS_ModuleFlags		#	4	; \TODO -- Not sure if we use this?
 WS_MsgList		#	4
-WS_MsgFileData		*	0	; \TODO -- This should be # 4 but * 0 matches bug in 1.02 source.
+WS_MsgFileData		#	4
 WS_MsgFileIndex		#	4
 WS_MsgFileLength	#	4
 WS_Block		#	BlockSize
@@ -261,7 +261,7 @@ CommandAddMsg
 
 	MOV	R0,#10
 	SWI	XOS_ReadUnsigned
-;	BVS	AddMsgExit
+	BVS	AddMsgExit
 
 	MOV	R0,R2
 	BL	FindMsgBlock
@@ -342,7 +342,7 @@ CommandRemoveMsg
 
 	MOV	R0,#10
 	SWI	XOS_ReadUnsigned
-;	BVS	RemMsgExit
+	BVS	RemMsgExit
 
 ; Find the message block if it exists.
 
