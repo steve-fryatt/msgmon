@@ -58,6 +58,7 @@ BUZIPFILE := msgmon$(shell date "+%Y%m%d").zip
 
 AS := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*asasm)
 STRIP := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*strip)
+CC := gcc
 
 MKDIR := mkdir
 RM := rm -rf
@@ -99,6 +100,7 @@ OUTDIR := build
 RUNIMAGE := MsgMon,ffa
 README := ReadMe,fff
 LICENSE := Licence,fff
+GETTIME := gettime
 
 
 # Set up the source files.
@@ -125,6 +127,7 @@ OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
 
 $(OUTDIR)/$(RUNIMAGE): $(OBJS) $(OBJDIR)
 	$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(RUNIMAGE) $(OBJS)
+	armalyser -d -o Compare/new.txt $(OUTDIR)/$(RUNIMAGE)
 
 # Create a folder to hold the object files.
 
@@ -133,9 +136,11 @@ $(OBJDIR):
 
 # Build the object files, and identify their dependencies.
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.s
-	$(AS) $(ASFLAGS) -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
+$(OBJDIR)/%.o: $(SRCDIR)/%.s $(OUTDIR)/$(GETTIME)
+	$(AS) $(ASFLAGS) $(shell $(OUTDIR)/$(GETTIME)) -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
 
+$(OUTDIR)/$(GETTIME): $(SRCDIR)/gettime.c
+	$(CC) $(SRCDIR)/gettime.c -o $(OUTDIR)/$(GETTIME)
 
 # Build the documentation
 
@@ -167,3 +172,5 @@ clean:
 	$(RM) $(OBJDIR)/*
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
+	$(RM) $(OUTDIR)/$(GETTIME)
+

@@ -47,12 +47,11 @@ XOS_ConvertInteger4			EQU	&0200DC
 XReport_Text0				EQU	&074C80
 XTaskManager_TaskNameFromHandle		EQU	&062680
 
-	GBLA	TimeLow
-	GBLA	TimeHigh
+		GBLA		ExecAddr
+		GBLA		LoadAddr
 
-TimeLow			SETA	0
-TimeHigh		SETA	0
-
+ExecAddr	SETA			(&FFFFFF00:OR:$TimeHigh)
+LoadAddr	SETA			$TimeLow
 
 
 ; workspace_target%=&600
@@ -72,7 +71,7 @@ WS_MsgFileIndex		#	4
 WS_MsgFileLength	#	4
 WS_Block		#	BlockSize
 
-WS_Size			*	@
+WS_Size			*	&600	; @
 
 ; PRINT'"Stack size:  ";workspace_target%-workspace_size%;" bytes."
 ; stack%=FNworkspace(workspace_size%,workspace_target%-workspace_size%)
@@ -1288,8 +1287,8 @@ CopyStringLoop
 
 FileData
 	DCD	FileBlockEnd - FileData
-	DCD	&FFFFFF00:OR:$TimeHigh
-	DCD	$TimeLow
+	DCD	$ExecAddr
+	DCD	$LoadAddr
 	DCD	FileEnd - FileStart
 	DCD	2_00011001
 	DCB	"ThirdParty.MsgMon.MsgList",0
