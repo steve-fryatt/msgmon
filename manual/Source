@@ -9,7 +9,7 @@
 =============================================================================
 MsgMon - Monitor Wimp Messages with Reporter                     Version $$version$$
 
-(C) Stephen Fryatt 2007-2013                             $$date$$
+(C) Stephen Fryatt 2010-2013                             $$date$$
 =============================================================================
 </literal>
 
@@ -224,10 +224,13 @@ Update to first public release.
 
 <subhead title="1.02 (12 June 2013)">
 
+Update to first public release.
+
 <list>
 <li>Port from ExtBasAsm to ObjAsm/Asasm and restructure for cross-assembly.
 <li>Fix broken workspace structure and remove unused memory allocations.
 <li>Replace all non-X SWIs and fix error handling.
+<li>Check for ARMv7 compatibility.
 </list>
 
 </chapter>
