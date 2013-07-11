@@ -221,6 +221,15 @@ Update to first public release.
 <li>String copies terminate on NULL or LF to correctly handle the full range of task names returned by the Task Manager.
 </list>
 
+
+<subhead title="1.02 (12 June 2013)">
+
+<list>
+<li>Port from ExtBasAsm to ObjAsm/Asasm and restructure for cross-assembly.
+<li>Fix broken workspace structure and remove unused memory allocations.
+<li>Replace all non-X SWIs and fix error handling.
+</list>
+
 </chapter>
 
 
