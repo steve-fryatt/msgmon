@@ -857,7 +857,7 @@ FilterTextYourRef
 	DCB	"; Your ref: &",0
 
 FilterTextLineStart
-	DCB	"\b",0
+	DCB	"\\b",0
 
 FilterTextLineSep
 	DCB	" : ",0
