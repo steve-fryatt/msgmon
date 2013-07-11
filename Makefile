@@ -1,6 +1,6 @@
 # Copyright 2013, Stephen Fryatt (info@stevefryatt.org.uk)
 #
-# This file is part of MenuGen:
+# This file is part of MsgMon:
 #
 #   http://www.stevefryatt.org.uk/software/
 #
@@ -173,4 +173,3 @@ clean:
 	$(RM) $(OUTDIR)/$(RUNIMAGE)
 	$(RM) $(OUTDIR)/$(README)
 	$(RM) $(OUTDIR)/$(GETTIME)
-

@@ -1,46 +1,6 @@
 <document title="MsgMon">
-<define name="version" value="1.01">
-<define name="date" value="22 May 2010" length=20 align="right">
-
-
-
-
-<literal mode="Strong" file="!Root">
-PrintPDF
-#SpriteFile Sprites
-#Sprite 8,0 Logo
-#Align Right
-{f*/:Easy PDF creation with GhostScript†}
-Version $$version$$ ($$date$$)†
-#Below
-#Line
-#Align Centre
-{f/:PrintPDF} is {f*:Freeware}: please read the <Licence>.
-
-#Indent 2
-#Table Columns 3
-è <Introduction>
-è <Installing PrintPDF=>Install>
-è <Using PrintPDF=>Use>
-è <Using the Queue=>Queue>
-è <Setting Choices=>Choices>
-è <Version History=>History>
-#Endtable
-#Indent
-#Line
-#Align Left
-If you have any comments about {f/:PrintPDF}, or would like to report any bugs that you find, you can email me at the address below.
-
-Updates to {f/:PrintPDF} and more applications for RISC OS computers can be found on my website at <http://www.stevefryatt.org.uk/software/=>#url>.
-
-#Align Centre
-© Stephen Fryatt, 2005 (<steve@stevefryatt.org.uk=>#url mailto:steve@stevefryatt.org.uk>)
-RISC OS 4 and 5 Iconsprites by Richard Hallas
-
-A plain text version of this manual is available <here=>*Filer_Run <PrintPDF$HelpText\>>.
-#Align Left
-</literal>
-
+<define name="version" value="">
+<define name="date" value="" length=20 align="right">
 
 
 
@@ -49,7 +9,7 @@ A plain text version of this manual is available <here=>*Filer_Run <PrintPDF$Hel
 =============================================================================
 MsgMon - Monitor Wimp Messages with Reporter                     Version $$version$$
 
-(C) Stephen Fryatt 2007-2010                             $$date$$
+(C) Stephen Fryatt 2007-2013                             $$date$$
 =============================================================================
 </literal>
 
@@ -61,13 +21,17 @@ MsgMon - Monitor Wimp Messages with Reporter                     Version $$versi
 
 <chapter title="Licence" file="Licence">
 
-<cite>MsgMon</cite> is <strong>freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2007-2010.
+<cite>MsgMon</cite> is licensed under the EUPL, Version&nbsp;1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
-<cite>MsgMon</cite> may be copied freely, so long as it remains unaltered with all its files and documentation intact.
+You may obtain a copy of the Licence at <link ref="#url http://joinup.ec.europa.eu/software/page/eupl">http://joinup.ec.europa.eu/software/page/eupl</link>
 
-If you wish to distribute <cite>MsgMon</cite>, please contact me to get my permission.  This is so that I can ensure that you have the latest version available.  <cite>MsgMon</cite> may not be sold, although Public Domain libraries may charge for the cost of discs.
+Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an &quot;<strong>as is</strong>&quot; basis, <strong>without warranties or conditions of any kind</strong>, either express or implied.
 
-No guarantee is made as to the suitability or stability of <cite>MsgMon</cite> for any particular purpose.  No liability can be accepted by the author for any loss or damage caused by the use of <cite>MsgMon</cite>.
+See the Licence for the specific language governing permissions and limitations under the Licence.
+
+The source for <cite>MsgMon</cite> can be found alongside this binary download, at <link ref="#url http://www.stevefryatt.org.uk/software">http://www.stevefryatt.org.uk/software</link>
+
+The necessary libraries and build tools can be found at <link ref="#url http://www.stevefryatt.org.uk/software/build">http://www.stevefryatt.org.uk/software/build</link>
 
 </chapter>
 
