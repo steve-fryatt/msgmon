@@ -24,8 +24,8 @@
 /**
  * \file: gettime.c
  *
- * Generate command line arguments for Asasm to set the current timestamp
- * for the embedded file.
+ * Generate command line arguments for Asasm to set the Load and
+ * Exec addrsses of the embedded messages file.
  */
 
 #include <time.h>
@@ -41,5 +41,6 @@ void main(void)
 	riscos = now;
 	riscos = (riscos + 2208988800LL) * 100LL;
 
-	printf("-PreDefine 'ExecAddr SETS \"&%08llX\"' -PreDefine 'LoadAddr SETS \"&%08llX\"\n'", riscos & 0xffffffff, 0xffffff00 | ((riscos >> 32) & 0xff));
+	printf("-PreDefine 'ExecAddr SETS \"&%08llX\"' -PreDefine 'LoadAddr SETS \"&%08llX\"\n'",
+			riscos & 0xffffffff, 0xffffff00 | ((riscos >> 32) & 0xff));
 }
