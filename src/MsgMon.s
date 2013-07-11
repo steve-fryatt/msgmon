@@ -26,10 +26,9 @@
 ;
 ; REM 26/32 bit neutral
 
-
 XOS_Module				EQU	&02001E
 XOS_ReadUnsigned			EQU	&020021
-OS_ReadArgs				EQU	&000049; Should be XO
+OS_ReadArgs				EQU	&000049	; Should be X
 OS_PrettyPrint				EQU	&000044
 OS_NewLine				EQU	&000003
 OS_Write0				EQU	&000002
@@ -47,10 +46,6 @@ XOS_ConvertInteger4			EQU	&0200DC
 XReport_Text0				EQU	&074C80
 XTaskManager_TaskNameFromHandle		EQU	&062680
 
-; workspace_target%=&600
-; workspace_size%=0 : REM This is updated.
-; block_size%=256
-
 ; ---------------------------------------------------------------------------------------------------------------------
 ; Set up the Module Workspace
 
@@ -66,9 +61,6 @@ WS_Block		#	BlockSize
 
 WS_Size			*	&600	; @
 
-; PRINT'"Stack size:  ";workspace_target%-workspace_size%;" bytes."
-; stack%=FNworkspace(workspace_size%,workspace_target%-workspace_size%)
-
 ; ---------------------------------------------------------------------------------------------------------------------
 ; Set up the Message List Block Template
 
@@ -80,25 +72,11 @@ MsgBlock_Number		#	4
 
 MsgBlock_Size		*	@
 
-
-
-
-;REM --------------------------------------------------------------------------------------------------------------------
-;
-;DIM time% 5, date% 256
-;?time%=3
-;SYS "OS_Word",14,time%
-;SYS "Territory_ConvertDateAndTime",-1,time%,date%,255,"(%dy %m3 %ce%yr)" TO ,date_end%
-;?date_end%=13
-
-;REM --------------------------------------------------------------------------------------------------------------------
-
-
-	AREA	Module,CODE
-	ENTRY
-
 ; ======================================================================================================================
 ; Module Header
+
+	AREA	Module,CODE,READONLY
+	ENTRY
 
 ModuleHeader
 	DCD	0			; Offset to task code
@@ -759,7 +737,7 @@ FilterDataLoop
 	CMP	R4,R3
 	BGE	FilterDataLoopExit
 
-	ADD	R1,R12,#WS_Block				; Output the word number
+	ADD	R1,R12,#WS_Block			; Output the word number
 
 	ADRL	R0,FilterTextLineStart
 	BL	CopyString
