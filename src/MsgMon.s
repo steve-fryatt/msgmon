@@ -52,14 +52,13 @@ XTaskManager_TaskNameFromHandle		EQU	&062680
 BlockSize		*	256
 
 			^	0
-WS_ModuleFlags		#	4	; \TODO -- Not sure if we use this?
 WS_MsgList		#	4
 WS_MsgFileData		#	4
 WS_MsgFileIndex		#	4
 WS_MsgFileLength	#	4
 WS_Block		#	BlockSize
 
-WS_Size			*	&600	; @
+WS_Size			*	@
 
 ; ---------------------------------------------------------------------------------------------------------------------
 ; Set up the Message List Block Template
@@ -514,10 +513,7 @@ InitCode
 ; Initialise the workspace that was just claimed.
 
 	MOV	R0,#0
-	STR	R0,[R12,#WS_ModuleFlags]
-
 	STR	R0,[R12,#WS_MsgList]
-
 	STR	R0,[R12,#WS_MsgFileData]
 	STR	R0,[R12,#WS_MsgFileIndex]
 	STR	R0,[R12,#WS_MsgFileLength]
