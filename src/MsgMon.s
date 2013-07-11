@@ -28,17 +28,17 @@
 
 XOS_Module				EQU	&02001E
 XOS_ReadUnsigned			EQU	&020021
-OS_ReadArgs				EQU	&000049	; Should be X
-OS_PrettyPrint				EQU	&000044
-OS_NewLine				EQU	&000003
-OS_Write0				EQU	&000002
+XOS_ReadArgs				EQU	&020049
+XOS_PrettyPrint			EQU	&020044
+XOS_NewLine				EQU	&020003
+XOS_Write0				EQU	&020002
 XResourceFS_RegisterFiles		EQU	&061B40
 XResourceFS_DeregisterFiles		EQU	&061B41
 XFilter_RegisterPostFilter		EQU	&062641
 XFilter_DeRegisterPostFilter		EQU	&062643
 XOS_Find				EQU	&02000D
 XOS_File				EQU	&020008
-OS_BGet					EQU	&00000A	; Should be X
+XOS_BGet				EQU	&02000A
 XOS_ConvertHex6				EQU	&0200D3
 XOS_ConvertHex8				EQU	&0200D4
 XOS_ConvertCardinal1			EQU	&0200D5
@@ -218,7 +218,8 @@ CommandAddMsg
 	ADR	R0,AddMsgKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	OS_ReadArgs
+	SWI	XOS_ReadArgs
+	BVS	AddMsgExit
 
 	MOV	R4,R2					; Put the command buffer somewhere safe.
 
@@ -291,7 +292,8 @@ CommandRemoveMsg
 	ADR	R0,RemMsgKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	OS_ReadArgs
+	SWI	XOS_ReadArgs
+	BVS	RemMsgExit
 
 	MOV	R4,R2					; Put the command buffer somewhere safe.
 
@@ -397,9 +399,10 @@ ListMsgsMsgList
 	MOV	R2,#0
 
 	ADR	R0,DisplaySomeMsgs
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
+	SWIVC	XOS_NewLine
+	BVS	ListMsgsExit
 
 ListMsgsOuterLoop
 
@@ -411,12 +414,13 @@ ListMsgsPrintNames
 	BL	ConvertMsgNumber
 
 	ADD	R0,R12,#WS_Block
-	SWI	OS_Write0
+	SWI	XOS_Write0
 
 ; End off with a new line.
 
 ListMsgsPrintEOL
-	SWI	OS_NewLine
+	SWIVC	XOS_NewLine
+	BVS	ListMsgsExit
 
 ; Get the next message data block and loop.
 
@@ -429,13 +433,13 @@ ListMsgsPrintEOL
 
 ListMsgsAllMsgs
 	ADR	R0,DisplayAllMsgs
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
 
 ; Print a final blank line and exit.
 
 ListMsgsExit
-	SWI	OS_NewLine
+	SWIVC	XOS_NewLine
 
 	LDMFD	R13!,{PC}
 
@@ -472,7 +476,8 @@ CommandLoadMsgs
 	ADR	R0,LoadMsgsKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	OS_ReadArgs
+	SWI	XOS_ReadArgs
+	BVS	LoadMsgsExit
 
 	MOV	R4,R2					; Put the command buffer somewhere safe.
 
@@ -1113,8 +1118,9 @@ LoadOuterReadLoop
 	; Start by reading in the message number, up to the tab.
 
 LoadReadNumLoop
-	SWI	OS_BGet
+	SWI	XOS_BGet
 	BCS	LoadOuterLoopExit
+	BVS	LoadOuterLoopExit
 
 	TEQ	R0,#9
 	BEQ	LoadReadNumLoopExit
@@ -1140,7 +1146,8 @@ LoadReadNumLoopExit
 	; Read in the message name, following on from the integer.
 
 LoadReadStrLoop
-	SWI	OS_BGet
+	SWI	XOS_BGet
+	BVS	LoadOuterLoopExit
 	BCS	LoadReadStrLoopExit
 
 	CMP	R0,#32
@@ -1163,6 +1170,7 @@ LoadReadStrLoopExit
 	BCC	LoadOuterReadLoop
 
 LoadOuterLoopExit
+	MOVVS	R5,#0				; Zero message count on errors.
 	STR	R5,[R12,#WS_MsgFileLength]
 
 ; Close the file.
