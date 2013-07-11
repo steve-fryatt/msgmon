@@ -104,7 +104,7 @@ TitleString
 	ALIGN
 
 HelpString
-	DCB	"Message Monitor",9,$BuildVersion," (",$BuildDate,") ",169," Stephen Fryatt, 2011"
+	DCB	"Message Monitor",9,$BuildVersion," (",$BuildDate,") ",169," Stephen Fryatt, 2007-",$BuildDate:RIGHT:4
 	ALIGN
 
 ; ======================================================================================================================
