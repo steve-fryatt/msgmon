@@ -47,13 +47,6 @@ XOS_ConvertInteger4			EQU	&0200DC
 XReport_Text0				EQU	&074C80
 XTaskManager_TaskNameFromHandle		EQU	&062680
 
-		GBLA		ExecAddr
-		GBLA		LoadAddr
-
-ExecAddr	SETA			(&FFFFFF00:OR:$TimeHigh)
-LoadAddr	SETA			$TimeLow
-
-
 ; workspace_target%=&600
 ; workspace_size%=0 : REM This is updated.
 ; block_size%=256
@@ -1287,8 +1280,8 @@ CopyStringLoop
 
 FileData
 	DCD	FileBlockEnd - FileData
-	DCD	$ExecAddr
 	DCD	$LoadAddr
+	DCD	$ExecAddr
 	DCD	FileEnd - FileStart
 	DCD	2_00011001
 	DCB	"ThirdParty.MsgMon.MsgList",0

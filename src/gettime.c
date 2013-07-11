@@ -41,6 +41,5 @@ void main(void)
 	riscos = now;
 	riscos = (riscos + 2208988800LL) * 100LL;
 
-	printf("-PreDefine 'TimeLow SETA &%llX' -PreDefine 'TimeHigh SETA &%llX\n'", riscos & 0xffffffff, (riscos >> 32) & 0xff);
+	printf("-PreDefine 'ExecAddr SETS \"&%08llX\"' -PreDefine 'LoadAddr SETS \"&%08llX\"\n'", riscos & 0xffffffff, 0xffffff00 | ((riscos >> 32) & 0xff));
 }
-
