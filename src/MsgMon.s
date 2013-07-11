@@ -29,7 +29,7 @@
 XOS_Module				EQU	&02001E
 XOS_ReadUnsigned			EQU	&020021
 XOS_ReadArgs				EQU	&020049
-XOS_PrettyPrint			EQU	&020044
+XOS_PrettyPrint				EQU	&020044
 XOS_NewLine				EQU	&020003
 XOS_Write0				EQU	&020002
 XResourceFS_RegisterFiles		EQU	&061B40
