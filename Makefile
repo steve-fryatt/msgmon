@@ -136,7 +136,7 @@ $(OBJDIR):
 # Build the object files, and identify their dependencies.
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.s $(OUTDIR)/$(GETTIME)
-	$(AS) $(ASFLAGS) $(shell $(OUTDIR)/$(GETTIME)) -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
+	$(AS) $(ASFLAGS) $(shell $(OUTDIR)/$(GETTIME)) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
 
 $(OUTDIR)/$(GETTIME): $(SRCDIR)/gettime.c
 	$(CC) $(SRCDIR)/gettime.c -o $(OUTDIR)/$(GETTIME)

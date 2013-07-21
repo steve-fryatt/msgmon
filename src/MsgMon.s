@@ -26,25 +26,7 @@
 ;
 ; REM 26/32 bit neutral
 
-XOS_Module				EQU	&02001E
-XOS_ReadUnsigned			EQU	&020021
-XOS_ReadArgs				EQU	&020049
-XOS_PrettyPrint				EQU	&020044
-XOS_NewLine				EQU	&020003
-XOS_Write0				EQU	&020002
-XResourceFS_RegisterFiles		EQU	&061B40
-XResourceFS_DeregisterFiles		EQU	&061B41
-XFilter_RegisterPostFilter		EQU	&062641
-XFilter_DeRegisterPostFilter		EQU	&062643
-XOS_Find				EQU	&02000D
-XOS_File				EQU	&020008
-XOS_BGet				EQU	&02000A
-XOS_ConvertHex6				EQU	&0200D3
-XOS_ConvertHex8				EQU	&0200D4
-XOS_ConvertCardinal1			EQU	&0200D5
-XOS_ConvertInteger4			EQU	&0200DC
-XReport_Text0				EQU	&074C80
-XTaskManager_TaskNameFromHandle		EQU	&062680
+	GET	$Include/SWINames
 
 ; ---------------------------------------------------------------------------------------------------------------------
 ; Set up the Module Workspace
