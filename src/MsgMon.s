@@ -809,6 +809,7 @@ FilterDataLoopExit
 
 FilterExit
 	LDMFD	R13!,{R0-R6,R12,R14}
+	TEQ	R0,R0
 	TEQ	PC,PC
 	MOVNES	PC,R14
 	MSR	CPSR_f,#0
@@ -1209,6 +1210,7 @@ LoadIndexSkip
 
 LoadMsgFileExit
 	LDMFD	R13!,{R0-R8,R14}
+	TEQ	R0,R0
 	TEQ	PC,PC
 	MOVNES	PC,R14
 	MSR	CPSR_f,#0
