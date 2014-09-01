@@ -233,13 +233,22 @@ Update to first public release.
 <li>Check for ARMv7 compatibility.
 </list>
 
+
+<subhead title="1.03 (1 September 2014)">
+
+Update to first public release.
+
+<list>
+<li>Correctly terminate module title string.
+<li>Correct 32-bit detection in exit code.
+</list>
+
 </chapter>
 
 
 
 
 <literal mode="Text">
-
 
 Updates and Contacting Me
 -------------------------
