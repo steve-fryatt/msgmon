@@ -1,4 +1,4 @@
-# Copyright 2013, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2013-2016, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of MsgMon:
 #
@@ -24,146 +24,26 @@
 # It is intended for native compilation on Linux (for use in a GCCSDK
 # environment) or cross-compilation under the GCCSDK.
 
-# Set VERSION to build using a version number and not an SVN revision.
+ARCHIVE := msgmon
 
-.PHONY: all clean application documentation release backup
-
-# The build date.
-
-BUILD_DATE := $(shell date "+%d %b %Y")
-HELP_DATE := $(shell date "+%-d %B %Y")
-
-# Construct version or revision information.
-
-ifeq ($(VERSION),)
-  RELEASE := $(shell svnversion --no-newline)
-  VERSION := r$(RELEASE)
-  RELEASE := $(subst :,-,$(RELEASE))
-  HELP_VERSION := ----
-else
-  RELEASE := $(subst .,,$(VERSION))
-  HELP_VERSION := $(VERSION)
-endif
-
-$(info Building with version $(VERSION) ($(RELEASE)) on date $(BUILD_DATE))
-
-# The archive to assemble the release files in.  If $(RELEASE) is set, then the file can be given
-# a standard version number suffix.
-
-ZIPFILE := msgmon$(RELEASE).zip
-SRCZIPFILE := msgmon$(RELEASE)src.zip
-BUZIPFILE := msgmon$(shell date "+%Y%m%d").zip
-
-# Build Tools
-
-AS := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*asasm)
-STRIP := $(wildcard $(GCCSDK_INSTALL_CROSSBIN)/*strip)
-CC := gcc
-
-MKDIR := mkdir
-RM := rm -rf
-CP := cp
-
-ZIP := $(GCCSDK_INSTALL_ENV)/bin/zip
-
-MANTOOLS := $(SFTOOLS_BIN)/mantools
-BINDHELP := $(SFTOOLS_BIN)/bindhelp
-TEXTMERGE := $(SFTOOLS_BIN)/textmerge
-MENUGEN := $(SFTOOLS_BIN)/menugen
-
-
-# Build Flags
-
-ASFLAGS :=
-STRIPFLAGS := -O binary
-ZIPFLAGS := -x "*/.svn/*" -r -, -9
-SRCZIPFLAGS := -x "*/.svn/*" -r -9
-BUZIPFLAGS := -x "*/.svn/*" -r -9
-BINDHELPFLAGS := -f -r -v
-
-
-# Set up the various build directories.
-
-SRCDIR := src
-MANUAL := manual
-OBJDIR := obj
-OUTDIR := build
-
-
-# Set up the named target files.
-
-RUNIMAGE := MsgMon,ffa
-README := ReadMe,fff
-LICENSE := Licence,fff
+MODULE := MsgMon,ffa
 GETTIME := gettime
 
+OUTDIR := build
+EXTRASRCPREREQ := $(OUTDIR)/$(GETTIME)
 
-# Set up the source files.
-
-MANSRC := Source
-MANSPR := ManSprite
-READMEHDR := Header
+ASOPTIONS = $(shell $(OUTDIR)/$(GETTIME))
 
 OBJS := MsgMon.o
 
-# Build everything, but don't package it for release.
+include $(SFTOOLS_MAKE)/Module
 
-all: application documentation
-
-
-# Build the application and its supporting binary files.
-
-application: $(OUTDIR)/$(RUNIMAGE)
-
-
-# Build the complete !RunImage from the object files.
-
-OBJS := $(addprefix $(OBJDIR)/, $(OBJS))
-
-$(OUTDIR)/$(RUNIMAGE): $(OBJS) $(OBJDIR)
-	$(STRIP) $(STRIPFLAGS) -o $(OUTDIR)/$(RUNIMAGE) $(OBJS)
-
-# Create a folder to hold the object files.
-
-$(OBJDIR):
-	$(MKDIR) $(OBJDIR)
-
-# Build the object files, and identify their dependencies.
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.s $(OUTDIR)/$(GETTIME)
-	$(AS) $(ASFLAGS) $(shell $(OUTDIR)/$(GETTIME)) -PreDefine 'Include SETS "$(GCCSDK_INSTALL_ENV)/include"' -PreDefine 'BuildDate SETS "\"$(BUILD_DATE)\""' -PreDefine 'BuildVersion SETS "\"$(VERSION)\""' -o $@ $<
+# Build the GetTime helper utility.
 
 $(OUTDIR)/$(GETTIME): $(SRCDIR)/gettime.c
 	$(CC) $(SRCDIR)/gettime.c -o $(OUTDIR)/$(GETTIME)
 
-# Build the documentation
-
-documentation: $(OUTDIR)/$(README)
-
-$(OUTDIR)/$(README): $(MANUAL)/$(MANSRC)
-	$(MANTOOLS) -MTEXT -I$(MANUAL)/$(MANSRC) -O$(OUTDIR)/$(README) -D'version=$(HELP_VERSION)' -D'date=$(HELP_DATE)'
-
-
-# Build the release Zip file.
-
-release: clean all
-	$(RM) ../$(ZIPFILE)
-	(cd $(OUTDIR) ; $(ZIP) $(ZIPFLAGS) ../../$(ZIPFILE) $(RUNIMAGE) $(README) $(LICENSE))
-	$(RM) ../$(SRCZIPFILE)
-	$(ZIP) $(SRCZIPFLAGS) ../$(SRCZIPFILE) $(OUTDIR) $(SRCDIR) $(MANUAL) Makefile
-
-
-# Build a backup Zip file
-
-backup:
-	$(RM) ../$(BUZIPFILE)
-	$(ZIP) $(BUZIPFLAGS) ../$(BUZIPFILE) *
-
-
 # Clean targets
 
-clean:
-	$(RM) $(OBJDIR)/*
-	$(RM) $(OUTDIR)/$(RUNIMAGE)
-	$(RM) $(OUTDIR)/$(README)
+clean::
 	$(RM) $(OUTDIR)/$(GETTIME)
