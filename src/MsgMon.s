@@ -1,4 +1,4 @@
-; Copyright 2007-2013, Stephen Fryatt (info@stevefryatt.org.uk)
+; Copyright 2007-2020, Stephen Fryatt (info@stevefryatt.org.uk)
 ;
 ; This file is part of MsgMon:
 ;
@@ -213,11 +213,19 @@ CommandAddMsg
 	TEQ	R1,#0
 	BEQ	AddMsgExit
 
+AddMsgName
+	BL	FindMessageName
+	BNE	AddMsgNumber
+	B	AddMsgFound
+
+AddMsgNumber
 	MOV	R0,#10
 	SWI	XOS_ReadUnsigned
 	BVS	AddMsgExit
 
 	MOV	R0,R2
+
+AddMsgFound
 	BL	FindMsgBlock
 	TEQ	R6,#0
 	BNE	AddMsgExit
@@ -295,13 +303,21 @@ CommandRemoveMsg
 	TEQ	R1,#0
 	BEQ	RemMsgExit
 
+RemMsgName
+	BL	FindMessageName
+	BNE	RemMsgNumber
+	B	RemMsgFound
+
+RemMsgNumber
 	MOV	R0,#10
 	SWI	XOS_ReadUnsigned
 	BVS	RemMsgExit
 
+	MOV	R0,R2
+
 ; Find the message block if it exists.
 
-	MOV	R0,R2
+RemMsgFound
 	BL	FindMsgBlock
 	TEQ	R6,#0
 	BEQ	RemMsgExit
@@ -483,6 +499,100 @@ LoadMsgsExit
 
 LoadMsgsKeywordString
 	DCB	"file",0
+	ALIGN
+
+; ======================================================================================================================
+
+; Find a mesage number from a name.
+;
+; On Entry: R1  => The message name to search for.
+;           R12 => Workspace
+;
+; On Exit:  Z set if the message was found.
+;           R0  == The message number, or corrupted.
+
+FindMessageName
+	PUSH	{R1-R5,LR}
+
+; Does the string start "Message_"?
+
+	ADR	R0,MessageNamePrefix
+	BL	StringCompare
+	BNE	FindMessageExit
+
+; If so, does the rest of the message match something?
+
+	MOV	R1,R0
+
+	LDR	R2,[R12,#WS_MsgFileIndex]
+	LDR	R3,[R12,#WS_MsgFileLength]
+
+FindMessageLoop
+	TEQ	R3,#0
+	BEQ	FindMessageNotFound
+
+	; Load the message number into R5, and point R0 to the name.
+
+	LDR	R0,[R2],#4
+	LDR	R5,[R0],#4
+
+	BL	StringCompare
+	LDRBEQ	R0,[R0]
+	TEQEQ	R0,#0
+	BEQ	FindMessageFound
+
+	SUB	R3,R3,#1
+	B	FindMessageLoop
+
+FindMessageFound
+	MOV	R0,R5
+	B	FindMessageExit
+
+FindMessageNotFound
+	TEQ	R3,#1	; Clear the Z flag.
+
+FindMessageExit
+	POP	{R1-R5,PC}
+
+; ----------------------------------------------------------------------------------------------------------------------
+
+; Compare two strings.
+;
+; On Entry: R0 => String to test against.
+;           R1 => String to test.
+;
+; On Exit:  Z set if template was fully read.
+;           R0 => Next character of test string.
+
+StringCompare
+	PUSH	{R1-R3,LR}
+
+; Read and compare the characters in the strings.
+
+StringCompareLoop
+	LDRB	R2,[R0],#1
+	LDRB	R3,[R1],#1
+
+	TEQ	R2,#0
+	BEQ	StringCompareExit
+
+	TEQ	R3,#0
+	BEQ	StringCompareExit
+
+	TEQ	R2,R3
+	BEQ	StringCompareLoop
+
+; Has the string to match completed?
+
+StringCompareExit
+	SUB	R0,R1,#1
+	TEQ	R2,#0
+	POP	{R1-R3,PC}
+
+; ======================================================================================================================
+
+MessageNamePrefix
+	DCB	"Message_",0
 	ALIGN
 
 ; ======================================================================================================================
@@ -978,7 +1088,7 @@ ConvertFindLoop
 	B	ConvertFindLoop
 
 ConvertFound
-	MOV	R5,R0
+	MOV	R5,R0		; \\TODO -- Why do this? R0 == R5, from the earlier comparison!
 
 	ADR	R0,ConvertTextNameStart
 	BL	CopyString
