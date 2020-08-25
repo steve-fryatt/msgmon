@@ -512,7 +512,13 @@ LoadMsgsKeywordString
 ;           R0  == The message number, or corrupted.
 
 FindMessageName
-	PUSH	{R1-R5,LR}
+	PUSH	{R1-R6,LR}
+
+; Load a case conversion table.
+
+	MOV	R0,#-1
+	SWI	Territory_UpperCaseTable
+	MOV	R6,R0
 
 ; Does the string start "Message_"?
 
@@ -552,7 +558,7 @@ FindMessageNotFound
 	TEQ	R3,#1	; Clear the Z flag.
 
 FindMessageExit
-	POP	{R1-R5,PC}
+	POP	{R1-R6,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -560,6 +566,7 @@ FindMessageExit
 ;
 ; On Entry: R0 => String to test against.
 ;           R1 => String to test.
+;           R6 => Upper Case conversion table.
 ;
 ; On Exit:  Z set if template was fully read.
 ;           R0 => Next character of test string.
@@ -572,6 +579,9 @@ StringCompare
 StringCompareLoop
 	LDRB	R2,[R0],#1
 	LDRB	R3,[R1],#1
+
+	LDRB	R2,[R6,R2]
+	LDRB	R3,[R6,R3]
 
 	TEQ	R2,#0
 	BEQ	StringCompareExit
