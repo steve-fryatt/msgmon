@@ -542,10 +542,19 @@ FindMessageLoop
 	LDR	R0,[R2],#4
 	LDR	R5,[R0],#4
 
+	; Test the string against the template.
+
 	BL	StringCompare
+
+	; It's an exact match if the next character in the string to
+	; match is a terminator.
+
 	LDRBEQ	R0,[R0]
 	TEQEQ	R0,#0
+
 	BEQ	FindMessageFound
+
+	; Not a match, so loop to the next message entry.
 
 	SUB	R3,R3,#1
 	B	FindMessageLoop
@@ -580,14 +589,22 @@ StringCompareLoop
 	LDRB	R2,[R0],#1
 	LDRB	R3,[R1],#1
 
+	; Convert to upper case.
+
 	LDRB	R2,[R6,R2]
 	LDRB	R3,[R6,R3]
+
+	; Has the template run out?
 
 	TEQ	R2,#0
 	BEQ	StringCompareExit
 
+	; Has the string to test run out?
+
 	TEQ	R3,#0
 	BEQ	StringCompareExit
+
+	; Are the string and template still matching?
 
 	TEQ	R2,R3
 	BEQ	StringCompareLoop
@@ -595,8 +612,14 @@ StringCompareLoop
 ; Has the string to match completed?
 
 StringCompareExit
+	; Step the string pointer back to the next untested character.
+
 	SUB	R0,R1,#1
+
+	; It's a match if the template reached the terminator.
+
 	TEQ	R2,#0
+
 	POP	{R1-R3,PC}
 
 ; ======================================================================================================================
