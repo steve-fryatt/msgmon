@@ -166,14 +166,14 @@ More details of the commands offered by <cite>MsgMon</cite> can be found in the 
 
 The command <command>*MsgMonAddMsg</command> is used to add a message to the list to be reported (with an empty list, all messages will be returned).
 
-The &lt;message code&gt; parameter is a numeric Wimp message code: for example, 1 would be Message_DataSave.
+The &lt;message code&gt; parameter is a numeric Wimp message code in decimal (or hex, if preceded by &quot;&amp;&quot;), or a message name starting with <code>Message_</code>: for example, <code>1<code> or <code>Message_DataSave</code> would be equivalent.
 </comdef>
 
 <comdef target="*MsgMonRemoveMsg" params="[-message] &lt;message code&gt; | -all">
 
 The command <command>*MsgMonRemoveMsg</command> removes a message or messages from the interception list.
 
-If the &lt;message code&gt; parameter is used, then an individual message will be removed from the list: the code is a numeric Wimp message code in decimal (or hex, if preceded by &quot;&amp;&quot;).
+If the &lt;message code&gt; parameter is used, then an individual message will be removed from the list: the code is a numeric Wimp message code in decimal (or hex, if preceded by &quot;&amp;&quot;), or a message name starting with <code>Message_</code>.
 
 If -all is used, then all the messages in the list will be removed and <cite>MsgMon</cite> will start reporting on all messages again.
 </comdef>
@@ -187,7 +187,7 @@ An empty list indicates that all messages will be reported.
 
 <comdef target="*MsgMonLoadMsgs" params="[-file] &lt;message file&gt;">
 
-Load a new file of mappings between message numbers and names, used by <cite>MsgMon</cite> to include names in the Reporter window. This will only be necessary if your system is using non-standard messages provided by third-party applications.
+Load a new file of mappings between message numbers and names, used by <cite>MsgMon</cite> to look up messagee names passed to the <command>*MsgMonAddMsg</command> and <command>*MsgMonRemoveMsg</command> commands, and include names in the Reporter window. This will only be necessary if your system is using non-standard messages provided by third-party applications.
 
 The file pointed to by &lt;message file&gt; is a simple RISC OS format text file, consisting of a one line per message. Each line consists of the message number in hex (with a leading &quot;&amp;&quot;) followed by a tab character (ASCII 9) and then the part of the message name following &quot;Message_"&quot;.
 
@@ -241,6 +241,15 @@ Update to first public release.
 <list>
 <li>Correctly terminate module title string.
 <li>Correct 32-bit detection in exit code.
+</list>
+
+
+<subhead title="Test Build">
+
+Update to first public release.
+
+<list>
+<li><command>*MsgMonAddMsg</command> and <command>*MsgMonRemoveMsg</command> can take message names as well as numbers.
 </list>
 
 </chapter>
