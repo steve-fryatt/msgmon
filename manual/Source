@@ -9,7 +9,7 @@
 =============================================================================
 MsgMon - Monitor Wimp Messages with Reporter                     Version $$version$$
 
-(C) Stephen Fryatt 2010-2013                             $$date$$
+(C) Stephen Fryatt 2010-2020                             $$date$$
 =============================================================================
 </literal>
 
@@ -21,7 +21,7 @@ MsgMon - Monitor Wimp Messages with Reporter                     Version $$versi
 
 <chapter title="Licence" file="Licence">
 
-<cite>MsgMon</cite> is licensed under the EUPL, Version&nbsp;1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
+<cite>MsgMon</cite> is licensed under the EUPL, Version&nbsp;1.2 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
 You may obtain a copy of the Licence at <link ref="#url http://joinup.ec.europa.eu/software/page/eupl">http://joinup.ec.europa.eu/software/page/eupl</link>
 
