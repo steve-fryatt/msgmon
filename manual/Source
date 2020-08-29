@@ -249,7 +249,9 @@ Update to first public release.
 Update to first public release.
 
 <list>
+<li>Licence updated to EUPL&nbsp;v1.2.
 <li><command>*MsgMonAddMsg</command> and <command>*MsgMonRemoveMsg</command> can take message names as well as numbers.
+<li>Show <code>\</code> and <code>"</code> as <code>.</code> in ASCII display, to avoid catching <cite>Reporter</cite> out. 
 </list>
 
 </chapter>
