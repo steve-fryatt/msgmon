@@ -657,7 +657,7 @@ InitCode
 
 ; Load the message file
 
-	ADRL	R0,DefaultMsgFile
+	ADR	R0,DefaultMsgFile
 	BL	LoadMsgFile
 
 ; Register a general post filter to see what messages are getting passed in.
@@ -706,7 +706,7 @@ FinalFreeMsgsLoop
 ; Remove the message translation file from ResourceFS.
 
 FinalDeregisterResFS
-	ADRL	R0,FileData				; Point R0 to the file data
+	ADR	R0,FileData				; Point R0 to the file data
 	SWI	XResourceFS_DeregisterFiles		; De-register the files
 
 ; Free any message tables in RMA.
@@ -795,7 +795,7 @@ FilterCode
 ; Output the message number.
 
 FilterOutputData
-	ADRL	R0,FilterTextMessageStart
+	ADR	R0,FilterTextMessageStart
 	ADD	R1,R12,#WS_Block
 	BL	CopyString
 
@@ -816,7 +816,7 @@ FilterOutputData
 
 ; Output the two task names.
 
-	ADRL	R0,FilterTextFrom
+	ADR	R0,FilterTextFrom
 	ADD	R1,R12,#WS_Block
 	BL	CopyString
 
@@ -839,7 +839,7 @@ FilterOutputData
 
 ; Output the references
 
-	ADRL	R0,FilterTextMyRef
+	ADR	R0,FilterTextMyRef
 	ADD	R1,R12,#WS_Block
 	BL	CopyString
 
@@ -867,7 +867,7 @@ FilterDataLoop
 
 	ADD	R1,R12,#WS_Block			; Output the word number
 
-	ADRL	R0,FilterTextLineStart
+	ADR	R0,FilterTextLineStart
 	BL	CopyString
 
 	MOV	R0,R4
@@ -886,14 +886,14 @@ FilterDataPadLoop
 	B	FilterDataPadLoop
 
 FilterDataPadLoopExit
-	ADRL	R0,FilterTextLineSep
+	ADR	R0,FilterTextLineSep
 	BL	CopyString
 
 	LDR	R0,[R5,R4]				; Output the word as hex
 	MOV	R2,#16
 	SWI	XOS_ConvertHex8
 
-	ADRL	R0,FilterTextLineSep
+	ADR	R0,FilterTextLineSep
 	BL	CopyString
 
 	ADD	R3,R4,R5				; Output the word as bytes
@@ -910,7 +910,7 @@ FilterDataPadLoopExit
 	LDRB	R0,[R3,#3]
 	BL	FilterDataWriteAscii
 
-	ADRL	R0,FilterTextLineSep
+	ADR	R0,FilterTextLineSep
 	BL	CopyString
 
 	LDR	R0,[R5,R4]				; Output the word as decimal
