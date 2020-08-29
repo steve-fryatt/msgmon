@@ -899,32 +899,16 @@ FilterDataPadLoopExit
 	ADD	R3,R4,R5				; Output the word as bytes
 
 	LDRB	R0,[R3,#0]
-	CMP	R0,#32
-	MOVLT	R0,#46	; ASC(".")
-	CMP	R0,#126
-	MOVGT	R0,#46	; ASC(".")
-	STRB	R0,[R1],#1
+	BL	FilterDataWriteAscii
 
 	LDRB	R0,[R3,#1]
-	CMP	R0,#32
-	MOVLT	R0,#46	; ASC(".")
-	CMP	R0,#126
-	MOVGT	R0,#46	; ASC(".")
-	STRB	R0,[R1],#1
+	BL	FilterDataWriteAscii
 
 	LDRB	R0,[R3,#2]
-	CMP	R0,#32
-	MOVLT	R0,#46	; ASC(".")
-	CMP	R0,#126
-	MOVGT	R0,#46	; ASC(".")
-	STRB	R0,[R1],#1
+	BL	FilterDataWriteAscii
 
 	LDRB	R0,[R3,#3]
-	CMP	R0,#32
-	MOVLT	R0,#46	; ASC(".")
-	CMP	R0,#126
-	MOVGT	R0,#46	; ASC(".")
-	STRB	R0,[R1],#1
+	BL	FilterDataWriteAscii
 
 	ADRL	R0,FilterTextLineSep
 	BL	CopyString
@@ -941,6 +925,22 @@ FilterDataPadLoopExit
 
 	ADD	R4,R4,#4
 	B	FilterDataLoop
+
+; Write a character as ASCII, within the limitations of Reporter.
+;
+; On entry, R0 = Character to write; R1 = Location to write to.
+
+FilterDataWriteAscii
+	CMP	R0,#32		; Control characters less than 32.
+	MOVLT	R0,#"."
+	CMP	R0,#126		; Control characters greater than 126.
+	MOVGT	R0,#"."
+	CMP	R0,#"\\"	; Reporter doesn't like \.
+	MOVEQ	R0,#"."
+	CMP	R0,#"\""	; Reporter doesn't like ".
+	MOVEQ	R0,#"."
+	STRB	R0,[R1],#1
+	MOV	PC,LR
 
 ; Put a space between blocks.
 
