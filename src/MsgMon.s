@@ -662,7 +662,7 @@ InitCode
 
 ; Register a general post filter to see what messages are getting passed in.
 
-	ADRL	R0,TitleString
+	ADR	R0,TitleString
 	ADR	R1,FilterCode
 	MOV	R2,R12
 	MOV	R3,#0
@@ -706,7 +706,7 @@ FinalFreeMsgsLoop
 ; Remove the message translation file from ResourceFS.
 
 FinalDeregisterResFS
-	ADR	R0,FileData				; Point R0 to the file data
+	ADRL	R0,FileData				; Point R0 to the file data
 	SWI	XResourceFS_DeregisterFiles		; De-register the files
 
 ; Free any message tables in RMA.
@@ -1121,8 +1121,6 @@ ConvertFindLoop
 	B	ConvertFindLoop
 
 ConvertFound
-	MOV	R5,R0		; \\TODO -- Why do this? R0 == R5, from the earlier comparison!
-
 	ADR	R0,ConvertTextNameStart
 	BL	CopyString
 
