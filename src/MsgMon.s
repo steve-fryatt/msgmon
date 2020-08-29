@@ -189,7 +189,7 @@ CommandLoadMsgsSyntax
 ; Entered with one parameter (the new message number).
 
 CommandAddMsg
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Claim 64 bytes of workspace from the stack.
@@ -257,7 +257,7 @@ AddMsgLinkIn
 
 AddMsgExit
 	ADD	R13,R13,#64
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -271,7 +271,7 @@ AddMsgKeywordString
 ; Entered with one parameter (the message number).
 
 CommandRemoveMsg
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Claim 64 bytes of workspace from the stack.
@@ -368,7 +368,7 @@ RemMsgAllLoop
 
 RemMsgExit
 	ADD	R13,R13,#64
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -383,7 +383,7 @@ RemMsgKeywordString
 ; Entered with no parameters.
 
 CommandListMsgs
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Traverse the message linked list, printing the message data out as we go.
@@ -441,7 +441,7 @@ ListMsgsAllMsgs
 ListMsgsExit
 	SWIVC	XOS_NewLine
 
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -463,7 +463,7 @@ DisplaySomeMsgs
 ; Entered with one paramener (the message file name).
 
 CommandLoadMsgs
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Claim 64 bytes of workspace from the stack.
@@ -493,7 +493,7 @@ CommandLoadMsgs
 
 LoadMsgsExit
 	ADD	R13,R13,#64
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -631,7 +631,7 @@ MessageNamePrefix
 ; ======================================================================================================================
 
 InitCode
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 
 ; Claim our workspace and store the pointer.
 
@@ -670,12 +670,12 @@ InitCode
 	SWI	XFilter_RegisterPostFilter
 
 InitExit
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
 FinalCode
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; De-register the post filter.
@@ -739,7 +739,7 @@ FinalReleaseWorkspace
 	SWI	XOS_Module
 
 FinalExit
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -749,11 +749,11 @@ ServiceCode
 
 ; Register the message translation file into ResourceFS.
 
-	STMFD	R13!,{R0-R3,R14}
+	PUSH	{R0-R3,R14}
 	ADRL	R0,FileData
 	MOV	R14,PC
 	MOV	PC,R2
-	LDMFD	R13!,{R0-R3,PC}
+	POP	{R0-R3,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -764,7 +764,7 @@ DefaultMsgFile
 ; ======================================================================================================================
 
 FilterCode
-	STMFD	R13!, {R0-R6,R12,R14}
+	PUSH	{R0-R6,R12,R14}
 
 ; Check that the reason code is 17, 18 or 19.
 
@@ -951,7 +951,7 @@ FilterDataLoopExit
 	SWI	XReport_Text0
 
 FilterExit
-	LDMFD	R13!,{R0-R6,R12,R14}
+	POP	{R0-R6,R12,R14}
 	TEQ	R0,R0
 	TEQ	PC,PC
 	MOVNES	PC,R14
@@ -1006,7 +1006,7 @@ FindMsgBlock
 ;
 ; R6  <= block (zero if not found)
 
-	STMFD	R13!,{R0-R5,R14}
+	PUSH	{R0-R5,R14}
 
 ; Set R4 up ready for the compare subroutine.  R6 points to the first block of message data.
 
@@ -1031,7 +1031,7 @@ FindMsgLoop
 	B	FindMsgLoop
 
 FindMsgExit
-	LDMFD	R13!,{R0-R5,PC}
+	POP	{R0-R5,PC}
 
 ; ======================================================================================================================
 
@@ -1044,7 +1044,7 @@ ConvertReasonCode
 ;
 ; R1  <= Terminating null
 
-	STMFD	R13!,{R0,R2-R5,R14}
+	PUSH	{R0,R2-R5,R14}
 
 ConvertReasonTest17
 	TEQ	R0,#17
@@ -1074,7 +1074,7 @@ ConvertReasonCopy
 	BL	CopyString
 
 ConvertReasonExit
-	LDMFD	R13!,{R0,R2-R5,PC}
+	POP	{R0,R2-R5,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1103,7 +1103,7 @@ ConvertMsgNumber
 ;
 ; R1  <= Terminating null
 
-	STMFD	R13!,{R0,R2-R5,R14}
+	PUSH	{R0,R2-R5,R14}
 
 	LDR	R2,[R12,#WS_MsgFileIndex]
 	LDR	R3,[R12,#WS_MsgFileLength]
@@ -1152,7 +1152,7 @@ ConvertNotFound
 	SWI	XOS_ConvertHex6
 
 ConvertExit
-	LDMFD	R13!,{R0,R2-R5,PC}
+	POP	{R0,R2-R5,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1179,7 +1179,7 @@ LoadMsgFile
 ; R0  => Filename
 ; R12 => Workspace
 
-	STMFD	R13!,{R0-R8,R14}
+	PUSH	{R0-R8,R14}
 
 	MOV	R1,R0
 
@@ -1352,7 +1352,7 @@ LoadIndexSkip
 	B	LoadIndexLoop
 
 LoadMsgFileExit
-	LDMFD	R13!,{R0-R8,R14}
+	POP	{R0-R8,R14}
 	TEQ	R0,R0
 	TEQ	PC,PC
 	MOVNES	PC,R14
@@ -1370,7 +1370,7 @@ CopyString
 ;
 ; R1 <= Copied terminator
 
-	STMFD	R13!,{R0,R2,R14}
+	PUSH	{R0,R2,R14}
 
 CopyStringLoop
 	LDRB	R2,[R0],#1
@@ -1382,7 +1382,7 @@ CopyStringLoop
 
 	SUB	R1,R1,#1
 
-	LDMFD	R13!,{R0,R2,PC}
+	POP	{R0,R2,PC}
 
 ; ======================================================================================================================
 ; Message file data
