@@ -275,7 +275,8 @@ Update to first public release.
 <list>
 <li>Licence updated to EUPL&nbsp;v1.2.
 <li><command>*MsgMonAddMsg</command> and <command>*MsgMonRemoveMsg</command> can take message names as well as numbers.
-<li>Show <code>\</code> and <code>"</code> as <code>.</code> in ASCII display, to avoid catching <cite>Reporter</cite> out. 
+<li>Wrap message body lines in double-quotation marks to resolve problems with <cite>Reporter</cite> interpreting <code>\</code> characters.
+<li>Replace <code>&quot;</code> with <code>.</code> in ASCII display, to avoid catching <cite>Reporter</cite> out. 
 </list>
 
 </chapter>

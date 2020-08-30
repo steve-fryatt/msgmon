@@ -865,12 +865,12 @@ FilterDataLoop
 	CMP	R4,R3
 	BGE	FilterDataLoopExit
 
-	ADD	R1,R12,#WS_Block			; Output the word number
+	ADD	R1,R12,#WS_Block
 
-	ADR	R0,FilterTextLineStart
+	ADR	R0,FilterTextLineStart			; Output the line start.
 	BL	CopyString
 
-	MOV	R0,R4
+	MOV	R0,R4					; Output the word number
 	MOV	R2,#4
 	SWI	XOS_ConvertCardinal1
 
@@ -917,6 +917,9 @@ FilterDataPadLoopExit
 	MOV	R2,#16
 	SWI	XOS_ConvertInteger4
 
+	ADR	R0,FilterTextLineEnd			; Output the line end
+	BL	CopyString
+
 	MOV	R0,#0
 	STRB	R0,[R1]
 
@@ -935,8 +938,6 @@ FilterDataWriteAscii
 	MOVLT	R0,#"."
 	CMP	R0,#126		; Control characters greater than 126.
 	MOVGT	R0,#"."
-	CMP	R0,#"\\"	; Reporter doesn't like \.
-	MOVEQ	R0,#"."
 	CMP	R0,#"\""	; Reporter doesn't like ".
 	MOVEQ	R0,#"."
 	STRB	R0,[R1],#1
@@ -985,10 +986,13 @@ FilterTextYourRef
 	DCB	"; Your ref: &",0
 
 FilterTextLineStart
-	DCB	"\\b",0
+	DCB	"\\b\"",0
 
 FilterTextLineSep
 	DCB	" : ",0
+
+FilterTextLineEnd
+	DCB	"\"",0
 	ALIGN
 
 FilterPollMask
