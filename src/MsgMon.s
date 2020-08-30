@@ -662,7 +662,7 @@ InitCode
 
 ; Register a general post filter to see what messages are getting passed in.
 
-	ADR	R0,TitleString
+	ADRL	R0,TitleString
 	ADR	R1,FilterCode
 	MOV	R2,R12
 	MOV	R3,#0
