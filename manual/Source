@@ -132,23 +132,47 @@ MsgMonAddMsg &amp;12
 MsgMonAddMsg &amp;13
 </codeblock>
 
+Alternatively, messages can be specified by name, using the names in message file (see <link ref="Config">Configuring the Module</link>) with <code>Message_</code> at the start. The list above could also be written as follows, with the same effect (the names are matched case-insensitively):
+
+<codeblock>
+MsgMonAddMsg Message_DataSave
+MsgMonAddMsg Message_DataSaveAck
+MsgMonAddMsg Message_DataLoad
+MsgMonAddMsg Message_DataLoadAck
+MsgMonAddMsg Message_DataOpen
+MsgMonAddMsg Message_RAMFetch
+MsgMonAddMsg Message_RAMTransmit
+MsgMonAddMsg Message_DataSaved
+MsgMonAddMsg Message_PreQuit
+MsgMonAddMsg Message_PaletteChange
+MsgMonAddMsg Message_SaveDesktop
+MsgMonAddMsg Message_DeviceClaim
+MsgMonAddMsg Message_DeviceInUse
+MsgMonAddMsg Message_Shutdown
+MsgMonAddMsg Message_ClaimEntity
+MsgMonAddMsg Message_DataRequest
+MsgMonAddMsg Message_Dragging
+MsgMonAddMsg Message_DragClaim
+MsgMonAddMsg Message_ReleaseEntity
+</codeblock>
+
 Similarly, a file could be created to report on messages in the Colour Picker Protocol:
 
 <codeblock>
-MsgMonAddMsg &amp;47700
-MsgMonAddMsg &amp;47701
-MsgMonAddMsg &amp;47702
-MsgMonAddMsg &amp;47703
+MsgMonAddMsg Message_ColourChoice
+MsgMonAddMsg Message_ColourChanged
+MsgMonAddMsg Message_CloseRequest
+MsgMonAddMsg Message_OpenParent
 </codeblock>
 
 Calls to <command>*MsgMonAddMsg</command> are additive, so running these two Obey files in sequence would result in messages belonging to all three protocols being displayed. To remove messages from the list, the <command>*MsgMonRemoveMsg</command> command can be used in a similar way; in addition, <command>*MsgMonRemoveMsg -all</command> would clear the entire list and return <cite>MsgMon</cite> to reporting all messages that are sent. This could be used in the Obey files to make each file select just its own messages by including it before the new messages are added:
 
 <codeblock>
 MsgMonRemoveMsg -all
-MsgMonAddMsg &amp;47700
-MsgMonAddMsg &amp;47701
-MsgMonAddMsg &amp;47702
-MsgMonAddMsg &amp;47703
+MsgMonAddMsg Message_ColourChoice
+MsgMonAddMsg Message_ColourChanged
+MsgMonAddMsg Message_CloseRequest
+MsgMonAddMsg Message_OpenParent
 </codeblock>
 
 More details of the commands offered by <cite>MsgMon</cite> can be found in the section on <link ref="Config">Configuring the Module</link>.
@@ -244,7 +268,7 @@ Update to first public release.
 </list>
 
 
-<subhead title="Test Build">
+<subhead title="1.04 (30 August 2020)">
 
 Update to first public release.
 
