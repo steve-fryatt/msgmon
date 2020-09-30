@@ -1,4 +1,4 @@
-# Copyright 2013-2016, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2013-2020, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of MsgMon:
 #
@@ -41,7 +41,8 @@ include $(SFTOOLS_MAKE)/Module
 # Build the GetTime helper utility.
 
 $(OUTDIR)/$(GETTIME): $(SRCDIR)/gettime.c
-	$(CC) $(SRCDIR)/gettime.c -o $(OUTDIR)/$(GETTIME)
+	@$(call show-stage,COMPILING,$(SRCDIR)/gettime.c)
+	@$(CC) $(SRCDIR)/gettime.c -o $(OUTDIR)/$(GETTIME)
 
 # Clean targets
 
