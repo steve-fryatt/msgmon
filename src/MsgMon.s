@@ -26,7 +26,7 @@
 ;
 ; REM 26/32 bit neutral
 
-	GET	$Include/SWINames
+	GET	$Include/AsmSWINames
 
 XReport_Text0                           EQU     &074C80
 
